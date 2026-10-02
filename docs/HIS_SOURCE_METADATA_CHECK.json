@@ -1,0 +1,175 @@
+{
+  "status": "passed",
+  "source_sha256": "c4dbe6641963635bd14ff485133fd8cb61968f9090bb550652f6b7861671a9d2",
+  "evidence": "Supplied schema metadata; not a live availability certification",
+  "datasets": [
+    {
+      "dataset": "patient",
+      "source_table": "patient",
+      "source_key": "hos_guid",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "person",
+      "source_table": "person",
+      "source_key": "person_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "ip",
+      "source_table": "ipt",
+      "source_key": "an",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "op",
+      "source_table": "ovst",
+      "source_key": "hos_guid",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "ip_diag",
+      "source_table": "iptdiag",
+      "source_key": "ipt_diag_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "op_diag",
+      "source_table": "ovstdiag",
+      "source_key": "ovst_diag_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "ip_procedure",
+      "source_table": "iptoprt",
+      "source_key": "iptoprt_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "op_procedure",
+      "source_table": "ovstoprt",
+      "source_key": "ovst_oprt_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "lines",
+      "source_table": "opitemrece",
+      "source_key": "hos_guid",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "ip_finance",
+      "source_table": "an_stat",
+      "source_key": "an",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "op_finance",
+      "source_table": "vn_stat",
+      "source_key": "vn",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "rights",
+      "source_table": "ipt_pttype",
+      "source_key": "ipt_pttype_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "drg",
+      "source_table": "ipt_drg_result",
+      "source_key": "ipt_drg_result_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "rep_bridge",
+      "source_table": "rep_eclaim_detail",
+      "source_key": "rep_eclaim_detail_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "submission_op",
+      "source_table": "ovst_eclaim",
+      "source_key": "vn",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "submission_nhso",
+      "source_table": "ovst_nhso_send",
+      "source_key": "vn",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "fdh",
+      "source_table": "fdh_claim_status",
+      "source_key": "fdh_claim_status_id",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "pttype",
+      "source_table": "pttype",
+      "source_key": "pttype",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "drug",
+      "source_table": "drugitems",
+      "source_key": "icode",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "nondrug",
+      "source_table": "nondrugitems",
+      "source_key": "icode",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "ward",
+      "source_table": "ward",
+      "source_key": "ward",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "department",
+      "source_table": "kskdepartment",
+      "source_key": "depcode",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "dchtype",
+      "source_table": "dchtype",
+      "source_key": "dchtype",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    },
+    {
+      "dataset": "dchstts",
+      "source_table": "dchstts",
+      "source_key": "dchstts",
+      "matches_metadata_pk": true,
+      "missing_columns": []
+    }
+  ]
+}

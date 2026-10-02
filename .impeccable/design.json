@@ -1,0 +1,569 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T17:49:50Z",
+  "title": "Design System: STMREP",
+  "extensions": {
+    "colorMeta": {
+      "petrol": {
+        "role": "primary",
+        "displayName": "Petrol",
+        "tonalRamp": [
+          "oklch(15% 0.0552 209.52)",
+          "oklch(25% 0.0552 209.52)",
+          "oklch(36% 0.0552 209.52)",
+          "oklch(47% 0.0552 209.52)",
+          "oklch(59% 0.0552 209.52)",
+          "oklch(71% 0.0552 209.52)",
+          "oklch(83% 0.0552 209.52)",
+          "oklch(95% 0.0552 209.52)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(25% 0.0000 89.88)",
+          "oklch(36% 0.0000 89.88)",
+          "oklch(47% 0.0000 89.88)",
+          "oklch(59% 0.0000 89.88)",
+          "oklch(71% 0.0000 89.88)",
+          "oklch(83% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Pale Blue Grey",
+        "tonalRamp": [
+          "oklch(15% 0.0051 247.88)",
+          "oklch(25% 0.0051 247.88)",
+          "oklch(36% 0.0051 247.88)",
+          "oklch(47% 0.0051 247.88)",
+          "oklch(59% 0.0051 247.88)",
+          "oklch(71% 0.0051 247.88)",
+          "oklch(83% 0.0051 247.88)",
+          "oklch(95% 0.0051 247.88)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Register Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0347 222.96)",
+          "oklch(25% 0.0347 222.96)",
+          "oklch(36% 0.0347 222.96)",
+          "oklch(47% 0.0347 222.96)",
+          "oklch(59% 0.0347 222.96)",
+          "oklch(71% 0.0347 222.96)",
+          "oklch(83% 0.0347 222.96)",
+          "oklch(95% 0.0347 222.96)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0292 232.08)",
+          "oklch(25% 0.0292 232.08)",
+          "oklch(36% 0.0292 232.08)",
+          "oklch(47% 0.0292 232.08)",
+          "oklch(59% 0.0292 232.08)",
+          "oklch(71% 0.0292 232.08)",
+          "oklch(83% 0.0292 232.08)",
+          "oklch(95% 0.0292 232.08)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Ledger Rule",
+        "tonalRamp": [
+          "oklch(15% 0.0129 244.26)",
+          "oklch(25% 0.0129 244.26)",
+          "oklch(36% 0.0129 244.26)",
+          "oklch(47% 0.0129 244.26)",
+          "oklch(59% 0.0129 244.26)",
+          "oklch(71% 0.0129 244.26)",
+          "oklch(83% 0.0129 244.26)",
+          "oklch(95% 0.0129 244.26)"
+        ]
+      },
+      "soft-surface": {
+        "role": "neutral",
+        "displayName": "Soft Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0045 258.32)",
+          "oklch(25% 0.0045 258.32)",
+          "oklch(36% 0.0045 258.32)",
+          "oklch(47% 0.0045 258.32)",
+          "oklch(59% 0.0045 258.32)",
+          "oklch(71% 0.0045 258.32)",
+          "oklch(83% 0.0045 258.32)",
+          "oklch(95% 0.0045 258.32)"
+        ]
+      },
+      "field-rule": {
+        "role": "neutral",
+        "displayName": "Field Rule",
+        "tonalRamp": [
+          "oklch(15% 0.0190 243.00)",
+          "oklch(25% 0.0190 243.00)",
+          "oklch(36% 0.0190 243.00)",
+          "oklch(47% 0.0190 243.00)",
+          "oklch(59% 0.0190 243.00)",
+          "oklch(71% 0.0190 243.00)",
+          "oklch(83% 0.0190 243.00)",
+          "oklch(95% 0.0190 243.00)"
+        ]
+      },
+      "secondary-rule": {
+        "role": "neutral",
+        "displayName": "Secondary Rule",
+        "tonalRamp": [
+          "oklch(15% 0.0188 237.80)",
+          "oklch(25% 0.0188 237.80)",
+          "oklch(36% 0.0188 237.80)",
+          "oklch(47% 0.0188 237.80)",
+          "oklch(59% 0.0188 237.80)",
+          "oklch(71% 0.0188 237.80)",
+          "oklch(83% 0.0188 237.80)",
+          "oklch(95% 0.0188 237.80)"
+        ]
+      },
+      "secondary-ink": {
+        "role": "neutral",
+        "displayName": "Secondary Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0500 221.66)",
+          "oklch(25% 0.0500 221.66)",
+          "oklch(36% 0.0500 221.66)",
+          "oklch(47% 0.0500 221.66)",
+          "oklch(59% 0.0500 221.66)",
+          "oklch(71% 0.0500 221.66)",
+          "oklch(83% 0.0500 221.66)",
+          "oklch(95% 0.0500 221.66)"
+        ]
+      },
+      "lavender": {
+        "role": "secondary",
+        "displayName": "Folder Lavender",
+        "tonalRamp": [
+          "oklch(15% 0.0205 298.18)",
+          "oklch(25% 0.0205 298.18)",
+          "oklch(36% 0.0205 298.18)",
+          "oklch(47% 0.0205 298.18)",
+          "oklch(59% 0.0205 298.18)",
+          "oklch(71% 0.0205 298.18)",
+          "oklch(83% 0.0205 298.18)",
+          "oklch(95% 0.0205 298.18)"
+        ]
+      },
+      "folder-ground": {
+        "role": "neutral",
+        "displayName": "Folder Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0062 255.48)",
+          "oklch(25% 0.0062 255.48)",
+          "oklch(36% 0.0062 255.48)",
+          "oklch(47% 0.0062 255.48)",
+          "oklch(59% 0.0062 255.48)",
+          "oklch(71% 0.0062 255.48)",
+          "oklch(83% 0.0062 255.48)",
+          "oklch(95% 0.0062 255.48)"
+        ]
+      },
+      "folder-ink": {
+        "role": "secondary",
+        "displayName": "Folder Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0721 298.10)",
+          "oklch(25% 0.0721 298.10)",
+          "oklch(36% 0.0721 298.10)",
+          "oklch(47% 0.0721 298.10)",
+          "oklch(59% 0.0721 298.10)",
+          "oklch(71% 0.0721 298.10)",
+          "oklch(83% 0.0721 298.10)",
+          "oklch(95% 0.0721 298.10)"
+        ]
+      },
+      "active-nav": {
+        "role": "neutral",
+        "displayName": "Active Navigation Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0055 211.04)",
+          "oklch(25% 0.0055 211.04)",
+          "oklch(36% 0.0055 211.04)",
+          "oklch(47% 0.0055 211.04)",
+          "oklch(59% 0.0055 211.04)",
+          "oklch(71% 0.0055 211.04)",
+          "oklch(83% 0.0055 211.04)",
+          "oklch(95% 0.0055 211.04)"
+        ]
+      },
+      "nav-label": {
+        "role": "neutral",
+        "displayName": "Navigation Label",
+        "tonalRamp": [
+          "oklch(15% 0.0208 208.14)",
+          "oklch(25% 0.0208 208.14)",
+          "oklch(36% 0.0208 208.14)",
+          "oklch(47% 0.0208 208.14)",
+          "oklch(59% 0.0208 208.14)",
+          "oklch(71% 0.0208 208.14)",
+          "oklch(83% 0.0208 208.14)",
+          "oklch(95% 0.0208 208.14)"
+        ]
+      },
+      "good-ground": {
+        "role": "tertiary",
+        "displayName": "Verified Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0132 159.91)",
+          "oklch(25% 0.0132 159.91)",
+          "oklch(36% 0.0132 159.91)",
+          "oklch(47% 0.0132 159.91)",
+          "oklch(59% 0.0132 159.91)",
+          "oklch(71% 0.0132 159.91)",
+          "oklch(83% 0.0132 159.91)",
+          "oklch(95% 0.0132 159.91)"
+        ]
+      },
+      "good-ink": {
+        "role": "tertiary",
+        "displayName": "Verified Green",
+        "tonalRamp": [
+          "oklch(15% 0.0821 158.76)",
+          "oklch(25% 0.0821 158.76)",
+          "oklch(36% 0.0821 158.76)",
+          "oklch(47% 0.0821 158.76)",
+          "oklch(59% 0.0821 158.76)",
+          "oklch(71% 0.0821 158.76)",
+          "oklch(83% 0.0821 158.76)",
+          "oklch(95% 0.0821 158.76)"
+        ]
+      },
+      "review-ground": {
+        "role": "tertiary",
+        "displayName": "Review Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0214 76.53)",
+          "oklch(25% 0.0214 76.53)",
+          "oklch(36% 0.0214 76.53)",
+          "oklch(47% 0.0214 76.53)",
+          "oklch(59% 0.0214 76.53)",
+          "oklch(71% 0.0214 76.53)",
+          "oklch(83% 0.0214 76.53)",
+          "oklch(95% 0.0214 76.53)"
+        ]
+      },
+      "review-ink": {
+        "role": "tertiary",
+        "displayName": "Amber Review",
+        "tonalRamp": [
+          "oklch(15% 0.0976 68.09)",
+          "oklch(25% 0.0976 68.09)",
+          "oklch(36% 0.0976 68.09)",
+          "oklch(47% 0.0976 68.09)",
+          "oklch(59% 0.0976 68.09)",
+          "oklch(71% 0.0976 68.09)",
+          "oklch(83% 0.0976 68.09)",
+          "oklch(95% 0.0976 68.09)"
+        ]
+      },
+      "bad-ground": {
+        "role": "tertiary",
+        "displayName": "Exception Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0197 13.64)",
+          "oklch(25% 0.0197 13.64)",
+          "oklch(36% 0.0197 13.64)",
+          "oklch(47% 0.0197 13.64)",
+          "oklch(59% 0.0197 13.64)",
+          "oklch(71% 0.0197 13.64)",
+          "oklch(83% 0.0197 13.64)",
+          "oklch(95% 0.0197 13.64)"
+        ]
+      },
+      "bad-ink": {
+        "role": "tertiary",
+        "displayName": "Exception Rose",
+        "tonalRamp": [
+          "oklch(15% 0.1254 19.19)",
+          "oklch(25% 0.1254 19.19)",
+          "oklch(36% 0.1254 19.19)",
+          "oklch(47% 0.1254 19.19)",
+          "oklch(59% 0.1254 19.19)",
+          "oklch(71% 0.1254 19.19)",
+          "oklch(83% 0.1254 19.19)",
+          "oklch(95% 0.1254 19.19)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0839 229.54)",
+          "oklch(25% 0.0839 229.54)",
+          "oklch(36% 0.0839 229.54)",
+          "oklch(47% 0.0839 229.54)",
+          "oklch(59% 0.0839 229.54)",
+          "oklch(71% 0.0839 229.54)",
+          "oklch(83% 0.0839 229.54)",
+          "oklch(95% 0.0839 229.54)"
+        ]
+      },
+      "his": {
+        "role": "neutral",
+        "displayName": "HIS Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0265 235.41)",
+          "oklch(25% 0.0265 235.41)",
+          "oklch(36% 0.0265 235.41)",
+          "oklch(47% 0.0265 235.41)",
+          "oklch(59% 0.0265 235.41)",
+          "oklch(71% 0.0265 235.41)",
+          "oklch(83% 0.0265 235.41)",
+          "oklch(95% 0.0265 235.41)"
+        ]
+      },
+      "rep": {
+        "role": "primary",
+        "displayName": "Evidence Teal",
+        "tonalRamp": [
+          "oklch(15% 0.0576 209.27)",
+          "oklch(25% 0.0576 209.27)",
+          "oklch(36% 0.0576 209.27)",
+          "oklch(47% 0.0576 209.27)",
+          "oklch(59% 0.0576 209.27)",
+          "oklch(71% 0.0576 209.27)",
+          "oklch(83% 0.0576 209.27)",
+          "oklch(95% 0.0576 209.27)"
+        ]
+      },
+      "stm": {
+        "role": "secondary",
+        "displayName": "Statement Lavender",
+        "tonalRamp": [
+          "oklch(15% 0.0536 293.69)",
+          "oklch(25% 0.0536 293.69)",
+          "oklch(36% 0.0536 293.69)",
+          "oklch(47% 0.0536 293.69)",
+          "oklch(59% 0.0536 293.69)",
+          "oklch(71% 0.0536 293.69)",
+          "oklch(83% 0.0536 293.69)",
+          "oklch(95% 0.0536 293.69)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Login introduction."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Main page headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Working sheet headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Table body text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Permanent form labels."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Primary and secondary actions."
+      },
+      "table-label": {
+        "displayName": "Table Label",
+        "purpose": "Compact table headings."
+      },
+      "number": {
+        "displayName": "Number",
+        "purpose": "Financial ledger amounts; use tabular numerals."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Technical identifiers and source keys."
+      }
+    },
+    "shadows": [
+      {
+        "name": "login-sheet",
+        "value": "0 10px 35px #1c435710",
+        "purpose": "Faint separation for the entry form."
+      },
+      {
+        "name": "case-file",
+        "value": "-12px 0 60px #13293533",
+        "purpose": "Structural depth for the right-side modal case file; backdrop #233c5266."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "background .16s, border-color .16s",
+        "purpose": "Enabled button state changes; hover also uses brightness(.97)."
+      },
+      {
+        "name": "loading-spin",
+        "value": "spin 1.2s linear infinite",
+        "purpose": "Loading icon rotation, disabled with other animations under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1200px"
+      },
+      {
+        "name": "single-column",
+        "value": "980px"
+      },
+      {
+        "name": "mobile",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A compact petrol action with visible keyboard focus.",
+      "html": "<button class=\"ds-primary\">บันทึกงานติดตาม</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:var(--radius,6px);padding:9px 14px;min-height:40px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .16s,border-color .16s;background:var(--petrol,#12474f);color:var(--paper,#fff)}.ds-primary:hover:not(:disabled){filter:brightness(.97)}.ds-primary:disabled{cursor:not-allowed;opacity:.5}.ds-primary:focus-visible,.ds-secondary:focus-visible{outline:3px solid #488dac;outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A white ruled action for supporting work.",
+      "html": "<button class=\"ds-secondary\">โหลดข้อมูลใหม่</button>",
+      "css": ".ds-secondary{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:var(--radius,6px);padding:9px 14px;min-height:40px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .16s,border-color .16s;background:white;border-color:#cbd8e1;color:#234b58}.ds-secondary:hover:not(:disabled){filter:brightness(.97)}.ds-secondary:disabled{cursor:not-allowed;opacity:.5}.ds-primary:focus-visible,.ds-secondary:focus-visible{outline:3px solid #488dac;outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Labelled Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A permanent label above a white stroked input.",
+      "html": "<label class=\"ds-field\">วันที่ติดตาม<input type=\"text\" placeholder=\"ระบุวันติดตาม\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;color:#213a43;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:13px;font-weight:500}.ds-field input{font:inherit;border:1px solid #c8d4de;border-radius:var(--radius,6px);background:white;color:#213a43;min-height:40px;padding:8px 11px;min-width:0;caret-color:var(--petrol,#12474f)}.ds-field input::placeholder{color:var(--muted,#60747f);opacity:1}.ds-field input:focus-visible{outline:3px solid #488dac;outline-offset:3px}"
+    },
+    {
+      "name": "Register Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Petrol index with a light current destination.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"เมนูหลัก\"><button aria-current=\"page\">ภาพรวมการเบิกจ่าย</button><button>แฟ้มรายเคส</button><button>คิวติดตาม</button></nav>",
+      "css": ".ds-nav{display:grid;gap:5px;padding:12px;background:var(--petrol,#12474f)}.ds-nav button{display:flex;align-items:center;gap:11px;min-height:45px;border:0;background:transparent;color:#c6d9dc;text-align:left;padding:11px 12px;border-radius:5px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:13px;cursor:pointer;transition:background .16s,border-color .16s}.ds-nav button[aria-current=page]{background:#f0f5f6;color:var(--petrol,#12474f);font-weight:600}.ds-nav button:hover{filter:brightness(.97)}.ds-nav button:focus-visible{outline:3px solid #488dac;outline-offset:3px}@media(max-width:760px){.ds-nav{display:flex;overflow-x:auto;gap:6px}.ds-nav button{flex:none;min-height:38px;padding:8px 10px;font-size:11px}}@media(prefers-reduced-motion:reduce){.ds-nav button{transition:none}}"
+    },
+    {
+      "name": "Verified Stamp",
+      "kind": "chip",
+      "refersTo": "badge-good",
+      "description": "A readable Thai status stamp; its color accompanies the label.",
+      "html": "<span class=\"ds-badge-good\">ยอดตรงกัน</span>",
+      "css": ".ds-badge-good{display:inline-block;padding:4px 8px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:10px;line-height:1.5;border-radius:4px;white-space:normal;background:#e8f2ec;color:#3a7757}"
+    },
+    {
+      "name": "Review Stamp",
+      "kind": "chip",
+      "refersTo": "badge-review",
+      "description": "A readable Thai status stamp; its color accompanies the label.",
+      "html": "<span class=\"ds-badge-review\">REP รอ STM</span>",
+      "css": ".ds-badge-review{display:inline-block;padding:4px 8px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:10px;line-height:1.5;border-radius:4px;white-space:normal;background:#fcf2e4;color:#875719}"
+    },
+    {
+      "name": "Exception Stamp",
+      "kind": "chip",
+      "refersTo": "badge-bad",
+      "description": "A readable Thai status stamp; its color accompanies the label.",
+      "html": "<span class=\"ds-badge-bad\">REP ปฏิเสธ</span>",
+      "css": ".ds-badge-bad{display:inline-block;padding:4px 8px;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:10px;line-height:1.5;border-radius:4px;white-space:normal;background:#fae8e9;color:#a8494e}"
+    },
+    {
+      "name": "Working Sheet",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "A flat white section with a ruled header.",
+      "html": "<section class=\"ds-sheet\"><header class=\"ds-sheet-header\"><h2>บัญชีภาพรวม</h2><p>ทุกยอดมีที่มา</p></header><div class=\"ds-ledger\"><span>ค่าเรียกเก็บ HIS</span><strong>12,500.00 <small>บาท</small></strong></div></section>",
+      "css": ".ds-sheet{border:1px solid var(--rule,#dce4eb);background:white;border-radius:var(--radius,6px);overflow:hidden;color:#213a43;font-family:'Noto Sans Thai',Tahoma,sans-serif}.ds-sheet-header{padding:18px 20px 15px;border-bottom:1px solid #e8edf2}.ds-sheet-header h2{font-size:16px;line-height:1.45;margin:0}.ds-sheet-header p{font-size:11px;color:var(--muted,#60747f);margin:5px 0 0}.ds-ledger{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0 20px;padding:14px 0;font-size:13px}.ds-ledger strong{font-size:20px;font-weight:600;color:#244451;font-variant-numeric:tabular-nums;white-space:nowrap}.ds-ledger small{font-size:10px;color:var(--muted,#60747f);font-weight:400;margin-left:7px}"
+    },
+    {
+      "name": "Folder Tabs",
+      "kind": "nav",
+      "refersTo": "folder-tab",
+      "description": "Straight-baseline file tabs; lavender marks the selected panel.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\" aria-label=\"รายละเอียดแฟ้ม\"><button role=\"tab\" aria-selected=\"true\" tabindex=\"0\">ภาพรวม</button><button role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">รายการรักษา</button><button role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">หลักฐาน / Timeline</button></div>",
+      "css": ".ds-tabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--rule,#dce4eb);overflow:auto}.ds-tabs button{background:#f0f3f7;border:1px solid var(--rule,#dce4eb);border-bottom:0;border-radius:7px 7px 0 0;min-height:39px;padding:9px 15px;color:#627482;font-family:'Noto Sans Thai',Tahoma,sans-serif;font-size:12px;white-space:nowrap;cursor:pointer;transition:background .16s,border-color .16s}.ds-tabs button[aria-selected=true]{background:var(--lavender,#eae6f5);color:#5b4d79;border-color:#d3cae7;font-weight:600}.ds-tabs button:hover{filter:brightness(.97)}.ds-tabs button:focus-visible{outline:3px solid #488dac;outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-tabs button{transition:none}}"
+    },
+    {
+      "name": "Evidence Rail",
+      "kind": "custom",
+      "refersTo": "evidence-rail",
+      "description": "The square HIS → REP → STM source rail, stacked on small screens.",
+      "html": "<section class=\"ds-rail\" aria-label=\"ขั้นตอนหลักฐานการเงิน\"><button><h2>HIS</h2><strong>1,240</strong><span>ครั้งรับบริการที่จัดช่วงเวลาได้</span></button><button><h2>REP</h2><strong>520,000.00</strong><span>ชดเชยส่วน สปสช. ที่จับคู่ได้</span></button><button><h2>STM</h2><strong>498,000.00</strong><span>ยอดสุทธิตาม statement ที่จับคู่ได้</span></button></section>",
+      "css": ".ds-rail{display:flex;background:white;border:1px solid #cfdae4;border-top:3px solid var(--petrol,#12474f);border-radius:0;color:#213a43;font-family:'Noto Sans Thai',Tahoma,sans-serif}.ds-rail button{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;background:white;border:0;padding:20px 23px;gap:5px;color:inherit;font:inherit;cursor:pointer;transition:background .16s,border-color .16s}.ds-rail button:last-child{background:#faf9fd}.ds-rail h2{font-size:18px;line-height:1.45;margin:3px 0 8px;color:var(--petrol,#12474f)}.ds-rail strong{font-size:23px;line-height:1.35;font-variant-numeric:tabular-nums;white-space:nowrap}.ds-rail span{font-size:12px;color:#3b5864}.ds-rail button:hover{filter:brightness(.97)}.ds-rail button:focus-visible{outline:3px solid #488dac;outline-offset:3px}@media(max-width:760px){.ds-rail{flex-direction:column}.ds-rail button{padding:16px 18px;border-bottom:1px solid var(--rule,#dce4eb)}.ds-rail strong{font-size:21px}}@media(prefers-reduced-motion:reduce){.ds-rail button{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Financial Case Register",
+    "overview": "STMREP uses the user's chosen light case file and register world. Cool white working sheets sit on a pale blue grey ground, with a petrol register index and lavender folder tabs. The material is practical and calm: thin ledger rules, compact Thai text and aligned figures make dense financial evidence easy to scan.\n\nA case keeps its HIS → REP → STM identity from the overview into its working file. Source, date, coverage and uncertainty remain legible beside the amounts. Thai operational wording and visible controls support staff who inspect records and record the next action.",
+    "keyCharacteristics": [
+      "Light working sheets with a petrol navigation index.",
+      "Lavender folder tabs and amber review stamps.",
+      "Compact Thai typography, tabular figures and ruled tables.",
+      "HIS → REP → STM labels carried into the case file.",
+      "Flat working surfaces with structural depth for the modal file."
+    ],
+    "rules": [
+      {
+        "name": "The Stage Identity Rule",
+        "body": "Keep HIS, REP and STM explicitly named. Use the existing HIS blue, REP teal and STM lavender together when comparing their series.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Stamp Rule",
+        "body": "Pair each status color with a readable status label. Amber signals review, green signals matched or completed work, and rose signals a rejected or failed result.",
+        "section": "colors"
+      },
+      {
+        "name": "The Aligned Figures Rule",
+        "body": "Use tabular numerals for amounts, counts and strong figures. Right-align financial table columns and keep the monetary unit secondary to its amount.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sheet Depth Rule",
+        "body": "Keep working sheets and ledger rows flat. Reserve the implemented shadows for the entry form and the modal file.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do retain light working sheets, petrol navigation and lavender filing cues.",
+      "Do use the Stage Identity Rule for comparisons and case evidence.",
+      "Do use the Aligned Figures Rule for monetary columns and ledger values.",
+      "Do keep source, date, coverage and unknown values visible beside financial observations.",
+      "Do retain visible focus outlines and the native modal and tab semantics.",
+      "Do preserve table structure with horizontal scrolling on small screens."
+    ],
+    "donts": [
+      "Don't use a status color without its readable label.",
+      "Don't replace missing financial evidence with zero.",
+      "Don't merge HIS charges, REP compensation, STM statements and cash evidence into one unnamed amount.",
+      "Don't add shadows to ordinary working sheets or ledger rows.",
+      "Don't replace the folder tab baseline or square evidence rail with uniformly pill-shaped containers."
+    ]
+  }
+}

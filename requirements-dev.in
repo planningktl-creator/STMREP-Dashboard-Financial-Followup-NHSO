@@ -1,0 +1,4 @@
+-r requirements.lock
+pytest>=8,<10
+playwright>=1.50,<2
+PyYAML>=6,<7

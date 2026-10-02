@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "fixture": "synthetic_only",
+  "transaction": "rolled_back",
+  "elapsed_seconds": 0.224,
+  "checks": [
+    "batch replay",
+    "snapshot replay",
+    "diagnosis denominator",
+    "AN priority",
+    "precision",
+    "unknown cost",
+    "AN patient matching",
+    "identity quarantine",
+    "ambiguous money null",
+    "latest submission per component",
+    "receipt allocation guard",
+    "appeal frozen baseline",
+    "signed appeal delta",
+    "task history",
+    "atomic dashboard counts/totals",
+    "decimal report strings/document lineage"
+  ]
+}

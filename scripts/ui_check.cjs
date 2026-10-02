@@ -1,0 +1,47 @@
+async (page) => {
+  await page.goto('http://127.0.0.1:18730');
+  if(await page.getByRole('button',{name:'เข้าสู่ข้อมูลจำลอง',exact:true}).isVisible())
+    await page.getByRole('button',{name:'เข้าสู่ข้อมูลจำลอง',exact:true}).click();
+  await page.getByRole('heading',{name:'บัญชีภาพรวม',exact:true}).waitFor();
+  await page.evaluate(()=>document.fonts.ready);
+  await page.setViewportSize({width:1440,height:1000});
+  await page.screenshot({path:'.impeccable/review/desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:'.impeccable/review/mobile.png',fullPage:true});
+  const mobileOverflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+  if(mobileOverflow)throw new Error('Mobile document overflow');
+  await page.setViewportSize({width:1440,height:1000});
+  await page.getByRole('button',{name:'REP รอ STM 20',exact:true}).click();
+  await page.getByRole('heading',{name:'ทะเบียนแฟ้มรายเคส',exact:true}).waitFor();
+  const rows=await page.locator('table.case-table tbody tr').count();
+  if(rows!==20)throw new Error('Stage filter did not select expected synthetic cases');
+  await page.locator('table.case-table .cell-link').first().click();
+  await page.getByRole('dialog').waitFor();
+  await page.getByRole('heading',{name:'บริบทการรักษา',exact:true}).waitFor();
+  const dialog=page.getByRole('dialog');
+  if(!await dialog.getAttribute('aria-labelledby'))throw new Error('Unnamed dialog');
+  await page.getByRole('tab',{name:'ภาพรวม',exact:true}).focus();
+  await page.keyboard.press('ArrowRight');
+  await page.getByRole('tabpanel').getByRole('heading',{name:'รายการ HIS ตามต้นทาง',exact:true}).waitFor();
+  await page.keyboard.press('Home');
+  await page.getByRole('tabpanel').getByRole('heading',{name:'บริบทการรักษา',exact:true}).waitFor();
+  await page.screenshot({path:'.impeccable/review/case-desktop.png',fullPage:false});
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:'.impeccable/review/case-mobile.png',fullPage:false});
+  await page.getByRole('tab',{name:'ติดตาม / อุทธรณ์',exact:true}).click();
+  await page.getByLabel('เรื่องติดตาม',{exact:true}).fill('ตรวจรับ UI ด้วยข้อมูลจำลอง');
+  await page.getByLabel('หมายเหตุ',{exact:true}).fill('SYNTHETIC UI TEST');
+  await page.getByRole('button',{name:'บันทึกงานติดตาม',exact:false}).click();
+  await page.getByText('บันทึกงานติดตามแล้ว',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'ปิดแฟ้ม',exact:true}).click();
+  await page.getByRole('button',{name:'Data Dictionary',exact:true}).click();
+  await page.getByLabel('ค้น Data Dictionary',{exact:true}).fill('opitemrece');
+  await page.getByText('hosxp.opitemrece',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'วางแผน',exact:true}).click();
+  await page.getByLabel('ค่าเรียกเก็บต่อเคส (บาท)',{exact:true}).fill('1.125');
+  await page.getByRole('button',{name:'คำนวณสถานการณ์',exact:false}).click();
+  await page.getByText('112.50',{exact:false}).waitFor();
+  await page.getByRole('button',{name:'ภาพรวมการเบิกจ่าย',exact:true}).click();
+  await page.setViewportSize({width:1440,height:1000});
+  return {status:'passed',viewportTests:[1440,390],stageFilteredCases:rows,flows:['demo session','stage filter','case file','task save','dictionary search','scenario'],syntheticOnly:true,mobileOverflow};
+}

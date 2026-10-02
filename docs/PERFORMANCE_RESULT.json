@@ -1,0 +1,47 @@
+{
+  "method": "EXPLAIN (ANALYZE, BUFFERS)",
+  "results": [
+    {
+      "query": "claim_key_lookup",
+      "execution_ms": 0.08,
+      "planning_ms": 0.105,
+      "shared_hit_blocks": 8,
+      "shared_read_blocks": 2,
+      "actual_rows": 1
+    },
+    {
+      "query": "rep_round_lookup",
+      "execution_ms": 0.45,
+      "planning_ms": 0.241,
+      "shared_hit_blocks": 10,
+      "shared_read_blocks": 2,
+      "actual_rows": 1
+    },
+    {
+      "query": "stm_claim_aggregate",
+      "execution_ms": 0.903,
+      "planning_ms": 0.96,
+      "shared_hit_blocks": 9,
+      "shared_read_blocks": 3,
+      "actual_rows": 1
+    },
+    {
+      "query": "monthly_aggregate",
+      "execution_ms": 64.165,
+      "planning_ms": 0.275,
+      "shared_hit_blocks": 0,
+      "shared_read_blocks": 12,
+      "actual_rows": 141
+    },
+    {
+      "query": "his_encounter_page",
+      "execution_ms": 0.183,
+      "planning_ms": 82.444,
+      "shared_hit_blocks": 0,
+      "shared_read_blocks": 6,
+      "actual_rows": 0
+    }
+  ],
+  "his_certified": false,
+  "limitation": "No complete live HIS encounter dataset available; claim/statement tests use existing corpus. Re-measure after HIS and full REP import."
+}

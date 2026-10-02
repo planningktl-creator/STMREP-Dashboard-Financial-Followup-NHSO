@@ -1,0 +1,869 @@
+{
+  "source_ref": "ipd_instrument_billcode.sql / organ_สมบูรณ์_2566.xlsx",
+  "source_year": 2566,
+  "verification": "observed_only",
+  "rates_usable": false,
+  "items": [
+    {
+      "icode": "3000643",
+      "billcode": "9205",
+      "category": "อื่นๆ",
+      "item_name": "9.2.0.5 ฟันเทียมบางส่วน ถอดได้ มากกว่า 5 ซี่",
+      "legacy_rate": "1500"
+    },
+    {
+      "icode": "3000644",
+      "billcode": "9203",
+      "category": "อื่นๆ",
+      "item_name": "9.2.0.3 ฟันเทียมทั้งปาก ถอดได้ 2 ชิ้น บนและล่าง (Complete Denture)",
+      "legacy_rate": "4400"
+    },
+    {
+      "icode": "3000645",
+      "billcode": "9202",
+      "category": "อื่นๆ",
+      "item_name": "9.2.0.2 ฟันเทียมทั้งปาก ถอดได้ 1 ชิ้น บนหรือล่าง (Single Denture)",
+      "legacy_rate": "2400"
+    },
+    {
+      "icode": "3000762",
+      "billcode": "9220",
+      "category": "อื่นๆ",
+      "item_name": "9.2.20 ชุดรากฟันเทียมพร้อมอุปกรณ์จับยึดฟันเทียมทั้งปาก",
+      "legacy_rate": null
+    },
+    {
+      "icode": "3001737",
+      "billcode": "3003",
+      "category": "ระบบทางเดินหายใจ",
+      "item_name": "3.0.3 หลอดคอช่วยการหายใจ (Tracheostomy Tube) ชนิดทําด้วยพลาสติก",
+      "legacy_rate": "1900"
+    },
+    {
+      "icode": "3001771",
+      "billcode": "7305",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.5 สกรูยึดเอ็นข้อเข่า",
+      "legacy_rate": "5700"
+    },
+    {
+      "icode": "3001772",
+      "billcode": "7601",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.6.1 ใบมีดตัดเนื้อเยื่ออ่อนในข้อ (Blade for Arthroscopic Shaver)",
+      "legacy_rate": "4500"
+    },
+    {
+      "icode": "3001773",
+      "billcode": "7004B",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.4 ข้อเข่าชนิดที่ส่วนรับน้ําหนักเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3002549",
+      "billcode": "8602",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.2 สายคล้องแขน (Arm sling)",
+      "legacy_rate": "150"
+    },
+    {
+      "icode": "3002550",
+      "billcode": "7306",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.6 หมุดสมอยึดติดกับกระดูกชนิดมีวัสดุยึดเส้นเอ็น",
+      "legacy_rate": "5000"
+    },
+    {
+      "icode": "3002552",
+      "billcode": "7308",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.8 ชุดสมอสําหรับเย็บซ่อมหมอนรองกระดูกเข่า (Arthroscopic Meniscus",
+      "legacy_rate": "5000"
+    },
+    {
+      "icode": "3002554",
+      "billcode": "7311",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.11 ตะขอตรึงกระดูก (Staple)",
+      "legacy_rate": "1000"
+    },
+    {
+      "icode": "3002557",
+      "billcode": "7102",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.1.2 สารทดแทนกระดูกเพื่อการสร้างกระดูก",
+      "legacy_rate": "2000"
+    },
+    {
+      "icode": "3002559",
+      "billcode": "7005",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.5 ข้อเข่าชนิดที่ส่วนรับน้ําหนักไม่สามารถเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3002570",
+      "billcode": "7005B",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.5 ข้อเข่าชนิดที่ส่วนรับน้ําหนักไม่สามารถเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3002571",
+      "billcode": "7009",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.9 วัสดุรองเบ้าข้อตะโพก (Supporting Ring)",
+      "legacy_rate": "9500"
+    },
+    {
+      "icode": "3002572",
+      "billcode": "7019",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.19 ข้อตะโพกมีเบ้า (ชนิด hybrid)",
+      "legacy_rate": "45000"
+    },
+    {
+      "icode": "3002574",
+      "billcode": "7011",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.11 ข้อตะโพกมีเบ้า (ชนิดไม่ใช้ซีเมนต์)",
+      "legacy_rate": "60000"
+    },
+    {
+      "icode": "3002575",
+      "billcode": "7006",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.6 ข้อตะโพกมีเบ้า (Total Hip Prosthesis) รวมทั้งอุปกรณ์เสริมไม่รวม",
+      "legacy_rate": "37000"
+    },
+    {
+      "icode": "3002581",
+      "billcode": "7204",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.4 โลหะดามกระดูกและใส่ในโพรงกระดูกข้อตะโพก ชนิดมีเกลียว เช่น ชุด",
+      "legacy_rate": "11000"
+    },
+    {
+      "icode": "3002584",
+      "billcode": "7214B",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "แผ่นโลหะดามกระดูก ชนิดหัวล็อกสําหรับใส่บริเวณที่หักใกล้ข้อ (Anatomical\nPlate)",
+      "legacy_rate": "17000"
+    },
+    {
+      "icode": "3002590",
+      "billcode": "8305",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.3.5 เฝือกพยุงลําตัว",
+      "legacy_rate": "2000"
+    },
+    {
+      "icode": "3002591",
+      "billcode": "8306",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.3.6 โลหะหรือ พลาสติกดามหลังคด",
+      "legacy_rate": "8000"
+    },
+    {
+      "icode": "3002593",
+      "billcode": "7007",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.7 ข้อตะโพกไม่มีเบ้า (Unipolar prosthesis)",
+      "legacy_rate": "10500"
+    },
+    {
+      "icode": "3002594",
+      "billcode": "7010",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.10 ข้อตะโพกไม่มีเบ้าชนิด 2 ชั้น (ไบโพล่า)",
+      "legacy_rate": "35000"
+    },
+    {
+      "icode": "3002595",
+      "billcode": "7201",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.1 โลหะใส่ในโพรงกระดูก (Nail) ชนิดไม่มีรูล็อก (K-nail)",
+      "legacy_rate": "1400"
+    },
+    {
+      "icode": "3002597",
+      "billcode": "7203",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.3 โลหะดามกระดูกและใส่ในโพรงกระดูก ชนิดไม่มีเกลียว (Nail Plate)",
+      "legacy_rate": "5000"
+    },
+    {
+      "icode": "3002599",
+      "billcode": "7209",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.9 แผ่นโลหะดามกระดูก ชนิดกว้าง (Broad Plate)",
+      "legacy_rate": "5200"
+    },
+    {
+      "icode": "3002600",
+      "billcode": "7210",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.10 แผ่นโลหะดามกระดูก ชนิดแคบ (Narrow Plate)",
+      "legacy_rate": "2500"
+    },
+    {
+      "icode": "3002601",
+      "billcode": "7211",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.11 แผ่นโลหะดามกระดูก ชนิดมีแผ่นพยุง (Buttress Plate)",
+      "legacy_rate": "3800"
+    },
+    {
+      "icode": "3002602",
+      "billcode": "7212",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.12 แผ่นโลหะดามกระดูก ชนิดเล็ก (Small Fragment Plate, Mini Plate)",
+      "legacy_rate": "1500"
+    },
+    {
+      "icode": "3002603",
+      "billcode": "7213",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.13 แผ่นโลหะดามกระดูก ชนิดดัดได้ (Reconstruction Plate)",
+      "legacy_rate": "2700"
+    },
+    {
+      "icode": "3002604",
+      "billcode": "7215",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.15 แผ่นโลหะขนาดเล็กที่ใช้ดามกระดูก",
+      "legacy_rate": "1500"
+    },
+    {
+      "icode": "3002605",
+      "billcode": "7216",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.16 โลหะดามกระดูกภายนอก",
+      "legacy_rate": "10000"
+    },
+    {
+      "icode": "3002606",
+      "billcode": "7301",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.1 สกรูยึดแผ่นโลหะชนิดหัวล็อก (Lock screw)",
+      "legacy_rate": "1600"
+    },
+    {
+      "icode": "3002607",
+      "billcode": "7302",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.2 สกรูยึดแผ่นโลหะดามกระดูก",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3002608",
+      "billcode": "7303",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.3 แท่งโลหะดามกระดูกขนาดต่างๆ ( Schanz Screw)",
+      "legacy_rate": "900"
+    },
+    {
+      "icode": "3002609",
+      "billcode": "7313",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.13 K-wire",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3002610",
+      "billcode": "7401",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.4.1 สารยึดกระดูก (Bone Cement) ชนิดธรรมดา",
+      "legacy_rate": "2000"
+    },
+    {
+      "icode": "3002611",
+      "billcode": "7402",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.4.2 สารยึดกระดูก (Bone Cement) ชนิดมียาปฏิชีวนะผสม",
+      "legacy_rate": "4300"
+    },
+    {
+      "icode": "3002612",
+      "billcode": "7506",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.5.6 แคลเซี่ยมไฮดรอกซี เอพาไตต์ ขนาด 1 ลูกบาศก์เซนติเมตร",
+      "legacy_rate": "2500"
+    },
+    {
+      "icode": "3002619",
+      "billcode": "2001",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.0.1 ลูกตาเทียมทําด้วยพลาสติก (Eye Prosthesis)",
+      "legacy_rate": "1000"
+    },
+    {
+      "icode": "3002620",
+      "billcode": "2002",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.0.2 วัสดุใส่หนุนรับลูกตาเทียมชนิดไม่มีรูพรุน",
+      "legacy_rate": "200"
+    },
+    {
+      "icode": "3002621",
+      "billcode": "2003",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.0.3 วัสดุใส่หนุนรับลูกตาเทียมชนิดมีรูพรุน (Integrated Orbital Implant)",
+      "legacy_rate": "13500"
+    },
+    {
+      "icode": "3002622",
+      "billcode": "2006",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.0.6 เลนส์แก้วตาเทียม ชนิดพับได้ (Foldable Intraocular Lens)",
+      "legacy_rate": "2800"
+    },
+    {
+      "icode": "3002623",
+      "billcode": "2007",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.0.7 เลนส์แก้วตาเทียม ชนิดแข็งพับไม่ได้ (Unfoldable Intraocular Lens)",
+      "legacy_rate": "700"
+    },
+    {
+      "icode": "3002632",
+      "billcode": "2113",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.1.13 ชุดผ่าตัดน้ําวุ้นลูกตา (Vitrectomy Set)",
+      "legacy_rate": "9000"
+    },
+    {
+      "icode": "3002634",
+      "billcode": "2115",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.1.15 ใบมีดตัดกระจกตา (Corneal Trephine)",
+      "legacy_rate": "5400"
+    },
+    {
+      "icode": "3002636",
+      "billcode": "2201",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.2.1 แว่นตาสําหรับมองไกล 1 อัน (Distance Eyeglasses)",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002637",
+      "billcode": "2202",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.2.2 แว่นตาสําหรับมองใกล้ 1 อัน (Near Eyeglasses)",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002638",
+      "billcode": "2203",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.2.3 เลนส์สัมผัส ชนิดแข็ง (Hard Contact Lens)",
+      "legacy_rate": "1300"
+    },
+    {
+      "icode": "3002639",
+      "billcode": "2204",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.2.4 เลนส์สัมผัส ชนิดครึ่งนุ่มครึ่งแข็ง (Rigid Gas Permeable Lens)",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002640",
+      "billcode": "2205",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.2.5 เลนส์สัมผัส ชนิดนิ่ม (Soft Contact Lens)",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002642",
+      "billcode": "7202",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.2 โลหะใส่ในโพรงกระดูก(Nail) ชนิดมีรูล็อก สําหรับยึดกระดูกส่วนกลาง",
+      "legacy_rate": "15000"
+    },
+    {
+      "icode": "3002644",
+      "billcode": "7206",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.6 โลหะดามกระดูกและใส่ในโพรงกระดูก ชนิดแยกชิ้น เช่น Gamma Nail",
+      "legacy_rate": "24000"
+    },
+    {
+      "icode": "3002672",
+      "billcode": "8514",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.5.14 พลาสติกดามขาชนิดสั้นขนาดใหญ่ (กันเท้าตก)",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002683",
+      "billcode": "2702",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.7.2 เครื่องช่วยพูด",
+      "legacy_rate": "36000"
+    },
+    {
+      "icode": "3002684",
+      "billcode": "8603",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.3 อุปกรณ์พยุงข้อศอก (Elbow support) มีแกนด้านข้าง",
+      "legacy_rate": "1500"
+    },
+    {
+      "icode": "3002685",
+      "billcode": "8604",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.4 อุปกรณ์พยุงข้อศอก (Elbow support) ไม่มีแกนด้านข้าง",
+      "legacy_rate": "1500"
+    },
+    {
+      "icode": "3002688",
+      "billcode": "7214",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.14 แผ่นโลหะดามกระดูก ชนิดมีหัวสกรูพยุง (Lock plate)",
+      "legacy_rate": null
+    },
+    {
+      "icode": "3002691",
+      "billcode": "7004",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.4 ข้อเข่าชนิดที่ส่วนรับน้ําหนักเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3002693",
+      "billcode": "2704",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "2.7.4 เพดานเทียม (Palatal Obturator)",
+      "legacy_rate": "800"
+    },
+    {
+      "icode": "3002695",
+      "billcode": "2704B",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "เพดานเทียม [Obturator + Nasoalveolar Molding (NAM)]",
+      "legacy_rate": "1800"
+    },
+    {
+      "icode": "3002696",
+      "billcode": "2704C",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "เพดานเทียม [Obturator + Screw + Nasoalveolar Molding (NAM)]",
+      "legacy_rate": "2500"
+    },
+    {
+      "icode": "3002697",
+      "billcode": "2704D",
+      "category": "ตา หู คอ จมูก",
+      "item_name": "เพดานเทียม [Nasoalveolar Molding (NAM)]",
+      "legacy_rate": "700"
+    },
+    {
+      "icode": "3002699",
+      "billcode": "5501",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.5.1 เครื่องมือตัดต่ออวัยวะอตั โนมัติแบบวงกลม",
+      "legacy_rate": "10000"
+    },
+    {
+      "icode": "3002700",
+      "billcode": "5502",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.5.2 เครื่องมือเย็บอวัยวะแบบอตั โนมัติ",
+      "legacy_rate": "4000"
+    },
+    {
+      "icode": "3002701",
+      "billcode": "5503",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.5.3 เครื่องมือเย็บอวัยวะอัตโนมัติแบบปรับหัวได้",
+      "legacy_rate": "7000"
+    },
+    {
+      "icode": "3002704",
+      "billcode": "8519",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.5.19 พลาสติกดามข้อเท้า (Ankle-Foot Orthosis)",
+      "legacy_rate": "3000"
+    },
+    {
+      "icode": "3002712",
+      "billcode": "8601",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.1 สายคล้องแขนกันไหล่หลุด",
+      "legacy_rate": "200"
+    },
+    {
+      "icode": "3002713",
+      "billcode": "8402",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.4.2 โลหะ/พลาสติกดามข้อไหล่ ข้อมือ และข้อศอกผู้ใหญ่",
+      "legacy_rate": "1000"
+    },
+    {
+      "icode": "3002716",
+      "billcode": "7307",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.7 สมอยึดกระดูกเข้ากับเนื้อเยื่อ (Suture Anchor)",
+      "legacy_rate": "6000"
+    },
+    {
+      "icode": "3002718",
+      "billcode": "8705",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.7.5 ไม้ค้ํายัน",
+      "legacy_rate": "250"
+    },
+    {
+      "icode": "3002719",
+      "billcode": "8701",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.7.1 เครื่องช่วยเดินชนิด 4 ขา (Pick-Up-Walker)",
+      "legacy_rate": "700"
+    },
+    {
+      "icode": "3002720",
+      "billcode": "8704",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.7.4 ไม้เท้าชนิด 3 หรือ 4 ปุ่ม",
+      "legacy_rate": "600"
+    },
+    {
+      "icode": "3002721",
+      "billcode": "8703",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.7.3 ไม้เท้า 1 ปุ่ม",
+      "legacy_rate": "190"
+    },
+    {
+      "icode": "3002722",
+      "billcode": "8307",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.3.7 เฝือกพยุงระดับเอว (Lumbosacral support )",
+      "legacy_rate": "1000"
+    },
+    {
+      "icode": "3002723",
+      "billcode": "8609",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.9 อุปกรณ์พยุงส้นเท้าและฝ่าเท้าชนิดสําเร็จรูป",
+      "legacy_rate": "1200"
+    },
+    {
+      "icode": "3003795",
+      "billcode": "9204",
+      "category": "อื่นๆ",
+      "item_name": "9.2.0.4 ฟันเทียมบางส่วน ถอดได้ 1-5 ซี่",
+      "legacy_rate": "1300"
+    },
+    {
+      "icode": "3004604",
+      "billcode": "5101",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.1.1 สายให้อาหารผ่านรูจมูกสู่กระเพาะอาหาร (Nasogastric Tube) ระยะ",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3004606",
+      "billcode": "5103",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.1.3 ชุดสายสวนกระเพาะอาหารแบบใส่ผ่านกล้อง (Percutaneous",
+      "legacy_rate": "4400"
+    },
+    {
+      "icode": "3004607",
+      "billcode": "5104",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.1.4 สายให้อาหารผ่านรูจมูกสู่ลําไส้เล็ก (Nasojejunostomy, NJ tube)",
+      "legacy_rate": "2700"
+    },
+    {
+      "icode": "3004611",
+      "billcode": "5201",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.2.1 ชุดยางรัดเส้นเลือดขอดในหลอดอาหาร (Esophageal Variceal Band",
+      "legacy_rate": "4500"
+    },
+    {
+      "icode": "3004614",
+      "billcode": "5301",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.3.1 อุปกรณ์ขยายท่อน้ําดี (Biliary Dilator)",
+      "legacy_rate": "2500"
+    },
+    {
+      "icode": "3004615",
+      "billcode": "5302",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.3.2 ท่อระบายน้ําดี ชนิดพลาสติก (Biliary and Pancreatic Duct Stent :",
+      "legacy_rate": "1300"
+    },
+    {
+      "icode": "3004616",
+      "billcode": "5303",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.3.3 ท่อระบายน้ําดี ชนิดโลหะ (Biliary Stent : Self Expandable Metal",
+      "legacy_rate": "20000"
+    },
+    {
+      "icode": "3004617",
+      "billcode": "5304",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.3.4 ท่อระบายน้ําดีชนิดมีปลายเปิดทางจมูก (Naso Biliary Tube)",
+      "legacy_rate": "2200"
+    },
+    {
+      "icode": "3004627",
+      "billcode": "5611",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.6.11 แผ่นใยสังเคราะห์แทนผนังท้อง (Mesh Graft) ชนิดเมมเบรน",
+      "legacy_rate": "15000"
+    },
+    {
+      "icode": "3004628",
+      "billcode": "5701",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.7.1 ถุงเก็บของเสียจากลําไส้ชนิด 1 ชิ้น (One piece appliance)",
+      "legacy_rate": "70"
+    },
+    {
+      "icode": "3004629",
+      "billcode": "5702",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.7.2 ถุงเก็บของเสียจากลําไส้ชนิด 2 ชิ้น (Two pieces appliance)",
+      "legacy_rate": "70"
+    },
+    {
+      "icode": "3004630",
+      "billcode": "5703",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.7.3 แป้นปิดรอบลําไส้/ทวารเทียม (Colostomy Flange) ในผู้ป่วยผ่าตัด",
+      "legacy_rate": null
+    },
+    {
+      "icode": "3004631",
+      "billcode": "5703B",
+      "category": "ทางเดินอาหาร",
+      "item_name": "แป้นปิดรอบลําไส้/ทวารเทียม (Colostomy Flange) แบบนูน (Convexity)",
+      "legacy_rate": "185"
+    },
+    {
+      "icode": "3004632",
+      "billcode": "5704A",
+      "category": "ทางเดินอาหาร",
+      "item_name": "ผงแป้ง (Stoma Powder)",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3004633",
+      "billcode": "5704B",
+      "category": "ทางเดินอาหาร",
+      "item_name": "กาว (Stoma Paste)",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3004634",
+      "billcode": "5704C",
+      "category": "ทางเดินอาหาร",
+      "item_name": "แผ่นปิดรักษาแผลเปื่อย (Stoma Wafer) ขนาด 10 x 10 ซม.",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3004635",
+      "billcode": "5704D",
+      "category": "ทางเดินอาหาร",
+      "item_name": "เข็มขัด (Stoma Belt)",
+      "legacy_rate": "300"
+    },
+    {
+      "icode": "3004643",
+      "billcode": "7002",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.2 ข้อศอก",
+      "legacy_rate": "22000"
+    },
+    {
+      "icode": "3004645",
+      "billcode": "7004A",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.4 ข้อเข่าชนิดที่ส่วนรับน้ําหนักเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3004646",
+      "billcode": "7005A",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.5 ข้อเข่าชนิดที่ส่วนรับน้ําหนักไม่สามารถเคลื่อนไหวได้",
+      "legacy_rate": "48000"
+    },
+    {
+      "icode": "3004648",
+      "billcode": "7008",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.8 ข้อตะโพกแบบมีเบ้า ชนิดผ่าแก้ไข (Total hip Revision Arthoplasty)",
+      "legacy_rate": "120000"
+    },
+    {
+      "icode": "3004663",
+      "billcode": "7027",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.27 ข้อเข่าเทียมชนิดที่ใช้ในการผ่าตัดแก้ไข (Revision Knee Prosthesis)",
+      "legacy_rate": "100000"
+    },
+    {
+      "icode": "3004664",
+      "billcode": "7028",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.28 ข้อเข่าเทียมชนิดที่ใช้ในการผ่าตัดแก้ไข (Revision Knee Prosthesis)",
+      "legacy_rate": "75000"
+    },
+    {
+      "icode": "3004665",
+      "billcode": "7029",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.029 ข้อเข่าเทียมชนิดที่ใช้ในการผ่าตัดแก้ไข (Revision Knee Prosthesis)\nชนิด Half set ส่วนทิเบีย (Tibial component)",
+      "legacy_rate": "75000"
+    },
+    {
+      "icode": "3004666",
+      "billcode": "7030",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.0.30 ข้อเข่าเทียมประเภทที่มีส่วนแกนเชื่อมต่อ (Hinge total knee",
+      "legacy_rate": "150000"
+    },
+    {
+      "icode": "3004667",
+      "billcode": "7101",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.1.1 หัวกระดูกเรเดียสเทียม",
+      "legacy_rate": "4000"
+    },
+    {
+      "icode": "3004668",
+      "billcode": "7103",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.1.3 เส้นเอ็นเทียมใช้บริเวณมือ",
+      "legacy_rate": "3500"
+    },
+    {
+      "icode": "3004669",
+      "billcode": "7205",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.5 โลหะดามกระดูกและใส่ในโพรงกระดูกที่เข่า ชนิดมีเกลียว เช่น ชุด",
+      "legacy_rate": "11000"
+    },
+    {
+      "icode": "3004670",
+      "billcode": "7207",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.7 โลหะดามกระดูกสันหลัง ส่วนคอ (Cervical Locking Plate)",
+      "legacy_rate": "24000"
+    },
+    {
+      "icode": "3004671",
+      "billcode": "7208",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.8 โลหะดามกระดูกสันหลัง ส่วนอก,เอว (PDS)",
+      "legacy_rate": "25000"
+    },
+    {
+      "icode": "3004672",
+      "billcode": "7214A",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "แผ่นโลหะดามกระดูก ชนิดหัวล็อค (Locking compression plate)",
+      "legacy_rate": "10000"
+    },
+    {
+      "icode": "3004680",
+      "billcode": "7224",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.2.24 อุปกรณ์ใส่โพรงกระดูกเพื่อเชื่อมข้อเท้าและข้อใต้เท้า",
+      "legacy_rate": "20000"
+    },
+    {
+      "icode": "3004681",
+      "billcode": "7304",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.4 สกรูขนาดเล็กที่ใช้ดามกระดูก",
+      "legacy_rate": "800"
+    },
+    {
+      "icode": "3004683",
+      "billcode": "7314",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.14 สกรูชนิดพิเศษสําหรับใส่ข้อมือ",
+      "legacy_rate": "3000"
+    },
+    {
+      "icode": "3004689",
+      "billcode": "7502",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.5.2 กระดูกแช่แข็งขนาดเล็ก",
+      "legacy_rate": "5000"
+    },
+    {
+      "icode": "3004690",
+      "billcode": "7503",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.5.3 กระดูกแช่แข็งขนาดกลาง",
+      "legacy_rate": "15000"
+    },
+    {
+      "icode": "3004691",
+      "billcode": "7504",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.5.4 กระดูกแช่แข็งขนาดใหญ่",
+      "legacy_rate": "25000"
+    },
+    {
+      "icode": "3004695",
+      "billcode": "8509",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.5.9 เบ้ารับน้ําหนักที่เอ็นสะบ้า (PTB)",
+      "legacy_rate": "3000"
+    },
+    {
+      "icode": "3004696",
+      "billcode": "8610",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.10 อุปกรณ์พยุงส้นเท้าและฝ่าเท้าชนิดหล่อพเิศษเฉพาะราย",
+      "legacy_rate": "1200"
+    },
+    {
+      "icode": "3004698",
+      "billcode": "8612",
+      "category": "วัสดุ/อุปกรณ์ด้านเวชศาสตร์ฟื้นฟู",
+      "item_name": "8.6.12 อุปกรณ์พยุงส้นเท้าและฝ่าเท้าสําหรับผู้ป่วยเบาหวานชนิดหล่อพเิ ศษ",
+      "legacy_rate": "1200"
+    },
+    {
+      "icode": "3004771",
+      "billcode": "4905",
+      "category": "หัวใจและหลอดเลือด",
+      "item_name": "4.9.5 สายสวนสองช่องแบบกึ่งถาวรสําหรับฟอกเลือดล้างไต",
+      "legacy_rate": "5000"
+    },
+    {
+      "icode": "3004956",
+      "billcode": "5608",
+      "category": "ทางเดินอาหาร",
+      "item_name": "5.6.8 แผ่นใยสังเคราะห์แทนผนงั ท้อง (Mesh Graft) ชนิดธรรมดา",
+      "legacy_rate": "2800"
+    },
+    {
+      "icode": "3005808",
+      "billcode": "7315",
+      "category": "กระดูก ข้อต่อ กล้ามเนื้อ เส้นเอ็น",
+      "item_name": "7.3.15 สกรูยึดกระดูกชนิดมีรูสอดแกนนาํ ทาง (Cannulated screw)",
+      "legacy_rate": "2000"
+    },
+    {
+      "icode": "3005972",
+      "billcode": "4511",
+      "category": "หัวใจและหลอดเลือด",
+      "item_name": "4.5.11 แผ่นปิดหนา้ อกเพื่อรับหรือปล่อยไฟฟ้าในการกระตุ้นหัวใจ",
+      "legacy_rate": "2500"
+    }
+  ]
+}

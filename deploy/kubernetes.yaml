@@ -1,0 +1,114 @@
+# Replace example.invalid, app image digest, ingress class, endpoints and PVC quota.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stmrep-runtime
+type: Opaque
+stringData:
+  PGWEB_URL: https://pgweb.example.invalid
+  BMS_ALLOWED_HOSTS: his.example.invalid
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stmrep-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 32Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stmrep
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: stmrep}
+  template:
+    metadata:
+      labels: {app: stmrep}
+    spec:
+      terminationGracePeriodSeconds: 150
+      securityContext:
+        runAsUser: 10929
+        runAsGroup: 10929
+        runAsNonRoot: true
+        fsGroup: 10929
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: app
+          image: registry.example.invalid/stmrep:0.2.0-rc.1
+          ports: [{containerPort: 8000}]
+          envFrom: [{secretRef: {name: stmrep-runtime}}]
+          env:
+            - {name: APP_MODE, value: live}
+            - {name: HOSPITAL_CODE, value: '10929'}
+            - {name: APP_ORIGINS, value: 'https://stmrep.example.invalid'}
+            - {name: COOKIE_SECURE, value: 'true'}
+            - {name: WORKER_ENABLED, value: 'true'}
+            - {name: DATA_DIR, value: /app/.data}
+            - {name: ITEM_COST_SEMANTICS, value: unverified}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: '2', memory: 2Gi}
+          volumeMounts:
+            - {name: data, mountPath: /app/.data}
+            - {name: temporary, mountPath: /tmp/stmrep}
+          startupProbe:
+            httpGet: {path: /healthz, port: 8000}
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8000}
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet: {path: /api/health/ready, port: 8000}
+            periodSeconds: 15
+            timeoutSeconds: 7
+          lifecycle:
+            preStop:
+              exec:
+                command: [python, -c, 'import os,signal; os.kill(1,signal.SIGTERM)']
+      volumes:
+        - {name: data, persistentVolumeClaim: {claimName: stmrep-data}}
+        - name: temporary
+          emptyDir: {sizeLimit: 1Gi}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: stmrep}
+spec:
+  selector: {app: stmrep}
+  ports: [{port: 80, targetPort: 8000}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stmrep
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 301m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '120'
+    nginx.ingress.kubernetes.io/proxy-request-buffering: 'off'
+    nginx.ingress.kubernetes.io/enable-access-log: 'false'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [stmrep.example.invalid]
+      secretName: stmrep-tls
+  rules:
+    - host: stmrep.example.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: {name: stmrep, port: {number: 80}}

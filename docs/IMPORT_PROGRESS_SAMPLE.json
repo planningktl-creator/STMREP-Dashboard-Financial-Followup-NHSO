@@ -1,0 +1,23 @@
+{
+  "observed_at": "2026-10-02T07:33:55.805460+07:00",
+  "status": "importing",
+  "source_expected_files": {
+    "REP": 13936,
+    "STM": 178
+  },
+  "registered": [
+    {
+      "source": "REP",
+      "files": 4590,
+      "documents": 4590,
+      "ready_documents": 4589
+    },
+    {
+      "source": "STM",
+      "files": 178,
+      "documents": 175,
+      "ready_documents": 175
+    }
+  ],
+  "limitation": "Partial database inventory while importing; no full-corpus verification yet. Process memory is not measured in this sample."
+}

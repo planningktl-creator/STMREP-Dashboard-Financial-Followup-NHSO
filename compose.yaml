@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATA_DIR: /app/.data
+    ports:
+      - '127.0.0.1:18729:8000'
+    volumes:
+      - financial-data:/app/.data
+    restart: unless-stopped
+    stop_grace_period: 150s
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs:
+      - /tmp/stmrep:uid=10929,gid=10929,mode=700,size=512m
+    init: true
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  financial-data:

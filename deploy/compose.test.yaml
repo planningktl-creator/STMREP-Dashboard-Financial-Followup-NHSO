@@ -1,0 +1,57 @@
+# Only disposable, synthetic test infrastructure. No production endpoints.
+services:
+  postgres:
+    image: postgres:17@sha256:a426e44bac0b759c95894d68e1a0ac03ecc20b619f498a91aae373bf06d8508d
+    environment:
+      POSTGRES_DB: stmrep_test
+      POSTGRES_USER: synthetic
+      POSTGRES_PASSWORD: synthetic-test-only
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U synthetic -d stmrep_test']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  pgweb:
+    image: sosedoff/pgweb@sha256:a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b
+    environment:
+      PGWEB_DATABASE_URL: postgresql://synthetic:synthetic-test-only@postgres:5432/stmrep_test?sslmode=disable
+    command: ['--bind=0.0.0.0', '--listen=8081', '--skip-open', '--no-idle-timeout']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ['127.0.0.1:18831:8081']
+  app:
+    image: stmrep:release-test
+    environment:
+      APP_MODE: demo
+      COOKIE_SECURE: 'false'
+      WORKER_ENABLED: 'false'
+      DATA_DIR: /app/.data
+      APP_ORIGINS: http://127.0.0.1:18830
+    ports: ['127.0.0.1:18830:8000']
+    volumes: ['test-data:/app/.data']
+    read_only: true
+    tmpfs: ['/tmp/stmrep:uid=10929,gid=10929,mode=700,size=512m']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    stop_grace_period: 150s
+  live:
+    profiles: [live]
+    image: stmrep:release-test
+    environment:
+      APP_MODE: live
+      PGWEB_URL: http://pgweb:8081
+      COOKIE_SECURE: 'false'
+      WORKER_ENABLED: 'true'
+      DATA_DIR: /app/.data
+      APP_ORIGINS: http://127.0.0.1:18832
+      PGWEB_MIN_INTERVAL: '0'
+    ports: ['127.0.0.1:18832:8000']
+    volumes: ['test-data:/app/.data']
+    read_only: true
+    tmpfs: ['/tmp/stmrep:uid=10929,gid=10929,mode=700,size=512m']
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    stop_grace_period: 150s
+volumes:
+  test-data:
