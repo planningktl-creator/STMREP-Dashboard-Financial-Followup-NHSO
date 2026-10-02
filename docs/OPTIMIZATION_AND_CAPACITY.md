@@ -18,7 +18,7 @@ Docker build บันทึก source SHA ใน log และ `/app/build-revi
 | ส่วน | สิ่งที่ทำ |
 |---|---|
 | HTTP connection | reuse ภายใน request/วงจร worker แล้วปิด; ไม่แชร์ requests.Session ข้าม thread |
-| pgweb schedule | หนึ่ง request ที่ส่งอยู่ต่อ endpoint; foreground/heartbeat มาก่อน batch ถัดไป ให้ background ทำต่อหลัง foreground 8 ครั้ง; คง minimum interval 0.25s |
+| pgweb schedule | จำกัด HTTP ที่รอ response สูงสุด 3 ต่อ endpoint และ background batch ส่งอยู่สูงสุด 1; foreground/heartbeat มาก่อน batch ถัดไป ให้ background ทำต่อหลัง foreground 8 ครั้ง; คง minimum start interval 0.25s |
 | Overview | เลือก snapshot และอ่าน totals/coverage/trend/worklist ใน SQL statement เดียวบน MVCC เดียว |
 | ค้นเคส | SQL หนึ่งครั้ง, keyset เดิม, HN/AN/VN prefix และ escape wildcard จากข้อความค้นหา |
 | REP ล่าสุด | กรอง claim ก่อน window rank; ฉบับล่าสุดที่เวลาเท่ากันหลายแถวยังไม่มีผู้ชนะ |
@@ -42,13 +42,13 @@ Migration extension เพิ่ม `financial/optimize.sql` อย่าง ato
 | ผู้ใช้พร้อมกัน / งานนำเข้า | 5 / 1 |
 | Encounter / รายการ HIS | 5,000 / 20,000 |
 | REP XLS นำเข้าจริง | 15,000 records, 3 ชีต รวม Data Drug (2), ไม่ skip |
-| P95 ค้นเคส | 1.210s (เป้า ≤2s) |
-| P95 overview | 2.698s (เป้า ≤5s) |
-| P95 liveness | 0.0042s (เป้า ≤1s) |
-| Peak memory | 129,261,568 bytes (~123MiB), 6.0% ของ 2Gi |
-| Event-loop delay สูงสุด | 0.0074s |
-| Import end-to-end | 155.223s (~96.6 records/s), รวม inspect/verify/โหลดผู้ใช้ |
-| Import transport requests | 155; gateway ทุกงาน 623 requests |
+| P95 ค้นเคส | 1.194s (เป้า ≤2s) |
+| P95 overview | 2.651s (เป้า ≤5s) |
+| P95 liveness | 0.0047s (เป้า ≤1s) |
+| Peak memory | 129,232,896 bytes (~123MiB), 6.0% ของ 2Gi |
+| Event-loop delay สูงสุด | 0.0088s |
+| Import end-to-end | 153.139s (~98.0 records/s), รวม inspect/verify/โหลดผู้ใช้ |
+| Import transport requests | 155; gateway ทุกงาน 632 requests |
 | EXPLAIN overview / ค้นเคส | ~129ms / ~9ms |
 | EXPLAIN incremental refresh 200 keys | ~140ms |
 
@@ -56,21 +56,27 @@ Migration extension เพิ่ม `financial/optimize.sql` อย่าง ato
 
 Main JS ลดจากประมาณ 296kB เป็น 261.63kB (gzip 81.71kB); case และ secondary screens โหลดเพิ่มเมื่อใช้งาน
 
-ผล local นี้ยังไม่แทนชุด REP 13,936 ไฟล์ / STM 178 ไฟล์ และยังไม่รวมความหน่วง BMS gateway จริง การรับรอง headroom สำหรับไฟล์ใกล้ 100MiB และข้อมูลเต็มต้องวัด staging อีกครั้งก่อนปรับ resource ไม่มีการรับรองยอด HIS–REP–STM หรือ forecasting จากผลนี้
+กรณีจำลอง gateway ช้าเพิ่ม 0.6s ต่อคำขอ: 5 users, 1,000 encounters, นำเข้าจริง 1,500 records ได้ P95 ค้นเคส 1.533s / overview 2.148s / liveness 0.0077s และ peak RAM ~75MiB ผ่านเป้า หลังพบว่าการ serialize ทุกคำขอทำให้ P95 3.459s / 5.825s จึงจำกัด parallel foreground สูงสุด 3 โดยยังคงส่ง background batch ได้ทีละชุดและไม่เพิ่ม worker
+
+ทดสอบขนาดไฟล์ 99MiB: เติมพื้นที่ท้าย BIFF fixture ที่ยังอ่าน 3 ชีตได้ (40 แถว/ชีต, 120 records) พร้อม 5 users/5,000 encounters ได้ P95 ค้นเคส 1.420s / overview 2.460s / liveness 0.0078s, peak memory 289,787,904 bytes (~276MiB; 13.5% ของ 2Gi), นำเข้าครบใน 31.543s การทดสอบนี้ยืนยัน upload/spooling/hash/parse และ headroom ของไฟล์ขนาดใหญ่จำลอง ไม่แทน workbook จริงที่มีแถว/สูตร/รูปแบบซับซ้อนเต็ม 100MiB
+
+ผล local นี้ยังไม่แทนชุด REP 13,936 ไฟล์ / STM 178 ไฟล์ และยังไม่รวมความหน่วง BMS gateway จริง ต้องวัด workbook จริงและข้อมูลเต็มบน staging อีกครั้งก่อนปรับ resource ไม่มีการรับรองยอด HIS–REP–STM หรือ forecasting จากผลนี้
 
 ## ตรวจซ้ำและหลักฐาน CI
 
 ```sh
 python -m pytest -q
+npm run build
 node frontend/scripts/check-launch.mjs
 node frontend/scripts/check-api.mjs
-npm run build
 docker build --build-arg BUILD_REVISION=$(git rev-parse HEAD) -t stmrep:release-test .
 python -m scripts.deployment_smoke
 python -m playwright install chromium
 python -m scripts.browser_smoke
 python -m scripts.performance_check --enforce --keep-database
 python -m scripts.query_benchmark
+python -m scripts.performance_check --label slow-gateway --gateway-delay 0.6 --iterations 2 --enforce --keep-database
+python -m scripts.performance_check --label large-file --pad-file-mib 99 --import-rows 40 --iterations 2 --enforce --keep-database
 docker compose -p stmrep-perf-test -f deploy/compose.test.yaml down --volumes
 ```
 

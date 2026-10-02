@@ -14,7 +14,7 @@ from repstm.gateway import Gate
 
 
 def test_foreground_and_lease_precede_next_background_batch():
-    gate=Gate();order=[]
+    gate=Gate(max_concurrent=1);order=[]
     def run(priority,label):
         with gate.slot(priority,0):order.append(label)
     with gate.slot(1,0):
@@ -28,7 +28,7 @@ def test_foreground_and_lease_precede_next_background_batch():
 
 
 def test_gateway_deadline_does_not_cancel_inflight_batch():
-    gate=Gate();errors=[]
+    gate=Gate(max_concurrent=1);errors=[]
     def waiting():
         try:
             with gate.slot(0,0,time.monotonic()+.02):raise AssertionError()
@@ -44,6 +44,19 @@ def test_gateway_releases_slot_after_failure():
     with pytest.raises(ValueError):
         with gate.slot(0,0):raise ValueError()
     with gate.slot(1,0):assert gate.active
+
+
+def test_readers_overlap_but_background_batches_never_overlap():
+    gate=Gate();entered=threading.Event()
+    def batch():
+        with gate.slot(2,0):entered.set()
+    with gate.slot(2,0):
+        thread=threading.Thread(target=batch);thread.start()
+        with gate.slot(0,0):
+            assert gate.active==2 and gate.background_active and not entered.is_set()
+        assert not entered.wait(.02)
+    thread.join(1)
+    assert entered.is_set() and gate.active==0 and not gate.background_active
 
 
 def test_scoped_connections_nested_reused_and_closed_on_error(monkeypatch):
@@ -115,7 +128,7 @@ def test_search_prefix_preserves_literal_percent_underscore():
 
 
 def test_background_progress_after_eight_foreground_requests():
-    gate=Gate();gate.foreground_streak=8;order=[]
+    gate=Gate(max_concurrent=1);gate.foreground_streak=8;order=[]
     def run(priority):
         with gate.slot(priority,0):order.append(priority)
     with gate.slot(0,0):
@@ -151,3 +164,18 @@ def test_successful_upload_persists_manifest_and_byte_count(tmp_path,monkeypatch
         stored=list((tmp_path/'data').rglob('*.xls'))
         assert len(stored)==1 and stored[0].read_bytes()==fixture.read_bytes()
         assert not list((tmp_path/'data').rglob('*.partial'))
+
+
+@pytest.mark.parametrize('code',['TEMPORARY_STORAGE_LOW','TEMPORARY_STORAGE_BUSY'])
+def test_temporary_admission_failure_is_visible_before_multipart(tmp_path,monkeypatch,code):
+    from fastapi import HTTPException
+    from fastapi.testclient import TestClient
+    from financial.main import create_app
+    app=create_app(Settings(mode='demo',cookie_secure=False,worker_enabled=False,data_dir=tmp_path))
+    def refuse(*_):raise HTTPException(503,code)
+    monkeypatch.setattr(TemporaryBudget,'reserve',refuse)
+    with TestClient(app) as client:
+        connected=client.post('/api/session/demo').json()
+        next(iter(app.state.sessions.active.values())).demo=False
+        response=client.post('/api/imports/uploads',headers={'x-csrf-token':connected['csrf'],'content-type':'multipart/form-data; boundary=invalid'},content=b'not-multipart')
+        assert response.status_code==503 and response.json()=={'error':code}

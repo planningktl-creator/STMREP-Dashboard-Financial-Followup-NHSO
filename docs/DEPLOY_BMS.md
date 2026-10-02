@@ -8,7 +8,7 @@
 
 | ช่องตั้งค่า | ค่าที่ใช้ |
 |---|---|
-| Repository | `https://github.com/planningktl-creator/STMREP-Dashboard-Financial-Followup-NHSO` |
+| Repository ของ BMS เดิม | `https://git.kube.bmscloud.in.th/bms-10929-1330xxxxx6723/STMREP-Dashboard.git`; sync SHA จาก GitHub ก่อน build |
 | Branch | `main`; บันทึก commit SHA ที่ build จริงเพื่อ rollback |
 | Build mode | Docker/Container |
 | Build context / working directory | `.` (root repository) |
@@ -111,9 +111,9 @@ Kubernetes: `deploy/kubernetes.yaml` เป็น template ที่ต้อง
 ```sh
 python -m pip install --require-hashes -r requirements-dev.lock
 python -m pytest -q
+npm run build
 node frontend/scripts/check-launch.mjs
 node frontend/scripts/check-api.mjs
-npm run build
 docker build -t stmrep:release-test .
 python -m scripts.deployment_smoke
 python -m playwright install chromium

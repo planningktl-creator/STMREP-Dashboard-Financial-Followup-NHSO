@@ -111,6 +111,8 @@ def main(args):
         from scripts.synthetic_workbook import write_rep
         from repstm.parser import parse_file
         write_rep(fixture,args.import_rows,rep_no='99'+str(uuid.uuid4().int%1000000).zfill(6))
+        if args.pad_file_mib:
+            with fixture.open('ab') as writer:writer.truncate(max(fixture.stat().st_size,args.pad_file_mib*1024*1024))
         parsed=parse_file(fixture)
         assert not [x for x in parsed['issues'] if x['severity']=='error']
         # Baseline image uses current test runner mounted outside the app package.
@@ -180,6 +182,7 @@ def main(args):
         report={'fixture':'synthetic_only','label':args.label,'image':args.image,'concurrent_users':5,'injected_gateway_delay_seconds':args.gateway_delay,
            'resources':{'cpu_cores':2,'memory_limit_bytes':peak['memory.max'],'peak_memory_bytes':peak['memory.peak']},
            'fixture_cases':args.cases,'fixture_lines':args.cases*4,'fixture_import_records':args.import_rows*3,
+           'fixture_file_bytes':fixture.stat().st_size,'padded_biff_size_test':bool(args.pad_file_mib),
            'import_elapsed_seconds':round(time.monotonic()-started,3),'import_result':detail['result'],
            'latency':{key:summary(key) for key in ['cases','overview','liveness']},
            'gateway':ops.get('gateway',{}),'application_resources':ops.get('resources',{}),
@@ -206,7 +209,9 @@ if __name__=='__main__':
         parser.add_argument('--import-rows',type=int,default=500);parser.add_argument('--iterations',type=int,default=4)
         parser.add_argument('--enforce',action='store_true');parser.add_argument('--keep-database',action='store_true')
         parser.add_argument('--gateway-delay',type=float,default=0)
+        parser.add_argument('--pad-file-mib',type=int,default=0)
         args=parser.parse_args()
         if not 1<=args.cases<=100000 or not 1<=args.import_rows<=60000 or not 1<=args.iterations<=50:parser.error('FIXTURE_BOUNDS_INVALID')
         if not 0<=args.gateway_delay<=2:parser.error('FIXTURE_DELAY_INVALID')
+        if not 0<=args.pad_file_mib<=99:parser.error('FIXTURE_FILE_SIZE_INVALID')
         main(args)

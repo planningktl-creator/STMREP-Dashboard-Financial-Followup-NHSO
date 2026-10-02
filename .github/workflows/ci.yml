@@ -34,9 +34,9 @@ jobs:
       - name: Tests and frontend build
         run: |
           python -m pytest -q
+          npm run build
           node frontend/scripts/check-launch.mjs
           node frontend/scripts/check-api.mjs
-          npm run build
       - name: Docker build
         run: docker build --build-arg BUILD_REVISION=${{ github.sha }} -t stmrep:release-test .
       - name: SQL, container, restart and backup acceptance
@@ -50,7 +50,9 @@ jobs:
       - name: Explain measured queries
         run: python -m scripts.query_benchmark
       - name: Record degraded gateway separately
-        run: python -m scripts.performance_check --label slow-gateway --gateway-delay 0.6 --iterations 2 --keep-database
+        run: python -m scripts.performance_check --label slow-gateway --gateway-delay 0.6 --iterations 2 --enforce --keep-database
+      - name: Near-limit file on temporary disk
+        run: python -m scripts.performance_check --label large-file --pad-file-mib 99 --import-rows 40 --iterations 2 --enforce --keep-database
       - name: Clean disposable database
         if: always()
         run: docker compose -p stmrep-perf-test -f deploy/compose.test.yaml down --volumes --remove-orphans
