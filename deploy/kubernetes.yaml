@@ -45,6 +45,7 @@ spec:
           ports: [{containerPort: 8000}]
           envFrom: [{secretRef: {name: stmrep-runtime}}]
           env:
+            - {name: PORT, value: '8000'}
             - {name: APP_MODE, value: live}
             - {name: HOSPITAL_CODE, value: '10929'}
             - {name: APP_ORIGINS, value: 'https://stmrep.example.invalid'}

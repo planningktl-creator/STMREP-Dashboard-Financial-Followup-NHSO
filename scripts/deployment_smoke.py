@@ -1,6 +1,7 @@
 """Disposable PostgreSQL/pgweb/container acceptance. Never uses hospital endpoints."""
 import json
 import os
+import re
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -47,19 +48,32 @@ def main():
         wait('http://127.0.0.1:18831/api/info')
         db=Database(os.environ['PGWEB_URL'])
         assert db.scalar('SELECT current_database()')=='stmrep_test'
+        compose('--profile','live','up','-d','live')
+        wait('http://127.0.0.1:18832/healthz')
+        assert requests.get('http://127.0.0.1:18832/api/health/ready',timeout=7).status_code==503
+        assert requests.get('http://127.0.0.1:18832/healthz',timeout=3).status_code==200
+        compose('stop','live')
+        checks.append('missing schema returns readiness 503 while liveness remains healthy')
         db.execute(schema_sql());db.migrate();db.migrate()
         checks.append('fresh database migration/replay')
         environment=os.environ.copy()
         command([sys.executable,'-m','scripts.integration_check'])
         checks.append('16 synthetic SQL assertions')
-        uid=compose('exec','-T','app','python','-c','import os;print(os.getuid())').strip()
-        assert uid==b'10929'
+        identity=compose('exec','-T','app','python','-c','import os;print(str(os.getuid())+":"+str(os.getgid()))').strip()
+        assert identity==b'10929:10929'
         response=requests.get('http://127.0.0.1:18830/api/health/ready',timeout=6)
         assert response.status_code==200
-        assert requests.get('http://127.0.0.1:18830/').status_code==200
+        page=requests.get('http://127.0.0.1:18830/',timeout=5)
+        assert page.status_code==200
+        assets=set(re.findall(r'(?:src|href)="(/assets/[^\"]+)"',page.text))
+        assert assets and any(asset.endswith('.js') for asset in assets)
+        for asset in assets:
+            response=requests.get('http://127.0.0.1:18830'+asset,timeout=5)
+            assert response.status_code==200 and 'text/html' not in response.headers.get('content-type','')
+        assert requests.get('http://127.0.0.1:18830/api/health',timeout=5).status_code==200
         command(['docker','run','--rm','--entrypoint','python','stmrep:release-test','-c',
                  "from pathlib import Path; p=Path('/app'); assert not (p/'.env').exists(); assert not list(p.rglob('*.xls')); assert not list(p.rglob('*.sqlite*')); assert not list((p/'.data').iterdir()); assert not (p/'docs').exists(); print('image_clean')"])
-        checks.append('non-root/container readiness/image excludes runtime data')
+        checks.append('UID/GID 10929:10929; same-origin HTML/assets/API; readiness; image excludes runtime data')
         marker="from pathlib import Path;import sqlite3; p=Path('/app/.data');(p/'archive').mkdir(exist_ok=True);(p/'archive/synthetic.txt').write_text('synthetic-only');c=sqlite3.connect(p/'pending.sqlite');c.execute('CREATE TABLE IF NOT EXISTS pending(id TEXT PRIMARY KEY,payload TEXT)');c.execute(\"INSERT OR IGNORE INTO pending VALUES('SYNTHETIC-UUID','SYNTHETIC-PAYLOAD')\");c.commit();c.close()"
         compose('exec','-T','app','python','-c',marker)
         compose('stop','app');compose('up','-d','--force-recreate','app')

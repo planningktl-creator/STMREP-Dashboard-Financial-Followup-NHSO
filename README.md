@@ -6,6 +6,12 @@ React/TypeScript + FastAPI/worker + PostgreSQL. ข้อมูลต้นท�
 
 รุ่น **0.2.0-rc.1** เตรียม Docker สำหรับ BMS: URL Session, readiness, graceful shutdown, persistent archive/checkpoint และ GitHub CI ใช้ pgweb HTTPS และ 1 instance
 
+## ตั้งค่า BMS deployment: เลือก Docker/Container
+
+Repository นี้ต้อง build ด้วย **Docker/Container** เพราะมี FastAPI และ worker ทำงานต่อเนื่อง ให้ตั้ง repository นี้ / branch `main`, build context `.`, Dockerfile `Dockerfile`, port `8000` และ `PORT=8000` ใช้คำสั่งเริ่มจาก image พร้อม persistent volume `/app/.data` ที่ UID/GID `10929` เขียนได้ ตั้ง runtime configuration และ HTTPS origin ตาม [คู่มือ BMS](docs/DEPLOY_BMS.md#ตั้งค่าหน้า-deployment-ของ-bms)
+
+ถ้า log แสดง `SPA build failed`, `raw-static (no package.json)` หรือ `no package.json AND no index.html` แสดงว่า deployment กำลังใช้ตัว build SPA ที่ root ให้เปลี่ยนเป็น Docker/Container แล้ว build ใหม่ Frontend อยู่ใน `frontend/` และ Dockerfile build ให้เอง การเพิ่ม `package.json` ที่ root หรือเลือก build เฉพาะ frontend ไม่ได้เริ่ม API/worker ที่ระบบนี้ต้องใช้
+
 ## เอกสารหลัก
 
 - [Data Dictionary](docs/DATA_DICTIONARY.md): schema, field meaning, source, key, NULL, precision, relationships และความเชื่อถือ
@@ -62,4 +68,4 @@ python -m scripts.validate_his_metadata --hosxp 'C:\Users\KTLho\Desktop\HOSxP St
 
 โค้ดและ schema รุ่นแรกพร้อมทดลองภายในโรงพยาบาล. การรับรอง completeness KPI ยังต้อง active BMS Session, profile HIS จริง, semantics cost, current payment rules, วันส่ง/อุทธรณ์/receipt และ full REP corpus verification. Forecast ยัง gated. Staff integration พักตามแผน.
 
-Git เก็บ source, metadata dictionary และ synthetic tests. ไฟล์ต้นฉบับ, archive, checkpoint, .env, reports และ clinical data อยู่ในโฟลเดอร์ที่ ignore. Repository นี้ใช้ private visibility; deployment ใช้ runtime secrets ของแพลตฟอร์ม
+Git เก็บ source, metadata dictionary และ synthetic tests. ไฟล์ต้นฉบับ, archive, checkpoint, .env, reports และ clinical data อยู่ในโฟลเดอร์ที่ ignore. Repository นี้เผยแพร่ source แบบ public; deployment ใช้ runtime secrets ของแพลตฟอร์ม

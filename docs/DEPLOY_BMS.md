@@ -1,5 +1,35 @@
 # Build และ deploy BMS — 0.2.0-rc.1
 
+## ตั้งค่าหน้า deployment ของ BMS
+
+เลือก **Docker/Container** ในหน้า deployment ของแอปนี้ แล้วกำหนดค่าดังตาราง ชื่อช่องอาจต่างกันตามหน้า BMS ให้ใช้ความหมายของค่าเป็นหลัก
+
+| ช่องตั้งค่า | ค่าที่ใช้ |
+|---|---|
+| Repository | `https://github.com/planningktl-creator/STMREP-Dashboard-Financial-Followup-NHSO` |
+| Branch | `main`; บันทึก commit SHA ที่ build จริงเพื่อ rollback |
+| Build mode | Docker/Container |
+| Build context / working directory | `.` (root repository) |
+| Dockerfile path | `Dockerfile` |
+| Build/start command override | เว้นว่าง ใช้ขั้นตอน build และ `CMD` ของ Dockerfile |
+| Container port / environment | `8000` / `PORT=8000` |
+| Replica / rollout | `1` / `Recreate`; 1 API process และ 1 worker |
+| Persistent storage | `/app/.data`, UID/GID `10929:10929` เขียนได้ |
+| Temporary storage | `/tmp/stmrep`, UID/GID `10929:10929` เขียนได้ |
+| Health probes | liveness `/healthz`; readiness `/api/health/ready` |
+| HTTPS routing | ทั้ง `/` และ `/api/*` ไป container เดียวกัน |
+| Proxy limits | request body `301 MiB`, read timeout `120s` |
+
+ตั้ง environment ตาม `.env.example` ผ่าน runtime configuration ของ BMS: `APP_MODE=live`, `HOSPITAL_CODE=10929`, `WORKER_ENABLED=true`, `COOKIE_SECURE=true`, `DATA_DIR=/app/.data`, `APP_ORIGINS=https://<domain-จริง>` และ exact `BMS_ALLOWED_HOSTS` ที่ยืนยันแล้ว เก็บ `PGWEB_URL` ที่อาจมีข้อมูล authentication ผ่าน Secret ของแพลตฟอร์ม ค่า placeholder ในตัวอย่างต้องแทนก่อนเปิด live
+
+### แก้ข้อผิดพลาด SPA build
+
+หาก log แสดง `== raw-static (no package.json) ==` และ `ERROR: no package.json AND no index.html found at repo root, public/, static/, or docs/` ตัว build กำลังมอง repository เป็น SPA/static แต่ไฟล์ frontend อยู่ใน `frontend/` ให้เปลี่ยน build mode เป็น Docker/Container และ build ใหม่จาก `main`
+
+Docker log ต้องแสดงขั้นตอนของ Dockerfile ทั้ง Node build (`npm ci`, `npm run build`) และ Python runtime แล้วเริ่ม `python -m financial.server` การเพิ่ม root `package.json`, ย้าย `index.html` หรือเลือก subdirectory `frontend` อย่างเดียวไม่ทำให้ FastAPI/worker พร้อมใช้งาน
+
+หลังบันทึกค่าต้องตรวจ build log และ HTTPS domain ของ BMS จริง การ push repository ไม่เปลี่ยน build mode ของ deployment เดิมโดยอัตโนมัติ ถ้าหน้า BMS ไม่มีช่อง volume, Secret หรือ readiness ให้ผู้ดูแลแพลตฟอร์มตั้ง container contract ตามหัวข้อด้านล่างก่อนเปิด live
+
 ## รูปแบบที่ใช้
 
 อ้างอิง IPTImprove และ CMI-Dashboard: multi-stage Docker, non-root, URL Session, same-origin UI/API, `/healthz`, cache ของ hashed assets และ CI ก่อน release ส่วน DRGSeekerAPI เป็นตัวอย่าง static preflight และ browser tests ที่ใช้ข้อมูลจำลอง
