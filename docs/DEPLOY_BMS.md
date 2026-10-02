@@ -24,6 +24,8 @@
 
 ตั้ง environment ตาม `.env.example` ผ่าน runtime configuration ของ BMS: `APP_MODE=live`, `HOSPITAL_CODE=10929`, `WORKER_ENABLED=true`, `COOKIE_SECURE=true`, `DATA_DIR=/app/.data`, `APP_ORIGINS=https://<domain-จริง>` และ exact `BMS_ALLOWED_HOSTS` ที่ยืนยันแล้ว เก็บ `PGWEB_URL` ที่อาจมีข้อมูล authentication ผ่าน Secret ของแพลตฟอร์ม ค่า placeholder ในตัวอย่างต้องแทนก่อนเปิด live
 
+Domain v2 ที่ตรวจในรอบแก้ ORIGIN_REJECTED คือ `https://stm-rep-v2-10929.kube.bmscloud.in.th`; runtime `APP_ORIGINS` ต้องตรงค่านี้โดยไม่มี slash ท้าย URL ส่วนค่าเดิม `stm-rep-dashboard-10929` เป็นคนละ origin
+
 ### แก้ข้อผิดพลาด SPA build
 
 หาก log แสดง `== raw-static (no package.json) ==` และ `ERROR: no package.json AND no index.html found at repo root, public/, static/, or docs/` ตัว build กำลังมอง repository เป็น SPA/static แต่ไฟล์ frontend อยู่ใน `frontend/` ให้เปลี่ยน build mode เป็น Docker/Container และ build ใหม่จาก `main`
@@ -98,6 +100,8 @@ Kubernetes: `deploy/kubernetes.yaml` เป็น template ที่ต้อง
 `financial.server` รับ SIGTERM แล้วประกาศ draining/หยุดรับงานใหม่ Worker เก็บ unsent batches และรอสูงสุด 120s หากถูก kill กลาง request ใช้ UUID เดิมตรวจ replay; lease หมดภายใน 180s หลัง heartbeat หยุด ก่อน resume ตรวจว่า instance เดิมหยุดจริง
 
 ## Health และ monitoring
+
+หากเว็บค้างหรือ API ไม่ทำงาน ใช้ [คำสั่งตรวจและลำดับแก้ runtime](RUNTIME_TROUBLESHOOTING.md) HTTP 200 ที่เป็นหน้า `Waking Up App...` ไม่ใช่ health ที่ผ่าน ต้องตรวจ JSON ของ STMREP พร้อม commit และ readiness ก่อนเปิดใช้งาน
 
 - `/healthz`, `/api/health`: liveness เท่านั้น ไม่ตรวจ BMS/DB
 - `/api/health/ready`: deadline 5s/no retry ตรวจ storage, schema/DB และ worker; DB/พื้นที่/worker ไม่พร้อมคืน 503

@@ -132,7 +132,7 @@ def main():
                 assert not errors
                 context.close();checks.append('URL Session '+token_key+'/single handshake/clean URL/storage/cases/mobile')
             context=browser.new_context();page=context.new_page();page.clock.install()
-            page.route('**/api/health',lambda route:route.fulfill(json={'status':'ok','mode':'live'}))
+            page.route('**/api/health',lambda route:route.fulfill(json={'status':'ok','mode':'live','hospital':'10929','version':'synthetic'}))
             def failed(route):route.fulfill(status=403,json={'error':'HOSPITAL_MISMATCH'})
             page.route('**/api/session',failed)
             page.goto(BASE+'/?bms-session-id=SYNTHETIC_WRONG_HOSPITAL&marketplace_token=SYNTHETIC_TOKEN')
@@ -150,6 +150,26 @@ def main():
             page.get_by_label('รหัส BMS Session',exact=True).wait_for()
             assert page.evaluate('Object.keys(localStorage).length+Object.keys(sessionStorage).length')==0
             context.close();checks.append('hospital mismatch/manual reconnect/session expiration')
+            # Reproduce the BMS wake gateway at the real call sites: status 200
+            # HTML health plus JSON 404 Session must show a recoverable failure.
+            context=browser.new_context();page=context.new_page()
+            def waking(route):route.fulfill(status=200,content_type='text/html',body='<title>Waking Up App...</title>')
+            page.route('**/api/health',waking)
+            page.route('**/api/session',lambda route:route.fulfill(status=404,json={'detail':'Not Found'}))
+            page.goto(BASE)
+            page.get_by_role('alert').filter(has_text='บริการยังไม่พร้อม').wait_for()
+            page.get_by_role('alert').filter(has_text='ยังเข้าถึง API ของ STMREP ไม่ได้').wait_for()
+            for width in (1440,390):
+                page.set_viewport_size({'width':width,'height':900})
+                assert not page.evaluate('document.documentElement.scrollWidth>window.innerWidth')
+                page.screenshot(path=str(ROOT/'.ci'/f'optimized-service-error-{width}.png'),full_page=True)
+            page.unroute('**/api/health',waking)
+            page.get_by_role('button',name='ตรวจบริการอีกครั้ง',exact=True).click()
+            page.get_by_role('button',name='เข้าสู่ข้อมูลจำลอง',exact=True).wait_for()
+            expect(page.get_by_role('alert').filter(has_text='บริการยังไม่พร้อม')).to_have_count(0)
+            page.get_by_role('button',name='เข้าสู่ข้อมูลจำลอง',exact=True).click()
+            page.get_by_role('heading',name='บัญชีภาพรวม',exact=True).wait_for()
+            context.close();checks.append('wake HTML/404 service error and manual recovery')
             optimization_checks(browser)
             checks+=['300ms search debounce','stale request canceled and cannot overwrite new result','hidden-tab polling pauses/resumes','completed job stops polling','malformed HTTP 200 recovery','desktop/mobile screenshots']
             browser.close()

@@ -2,20 +2,44 @@ export type Row = Record<string, any>;
 let csrf = '';
 export function setCsrf(value:string){csrf=value;}
 export class ApiError extends Error { constructor(public code:string,public status:number){super(code);} }
-export async function api(path:string, options:RequestInit={}):Promise<any>{
-  const headers=new Headers(options.headers);
-  if(options.body && !(options.body instanceof FormData))headers.set('Content-Type','application/json');
-  if(options.method && options.method!=='GET')headers.set('X-CSRF-Token',csrf);
-  const response=await fetch('/api'+path,{...options,headers,credentials:'same-origin'});
-  const contentType=response.headers.get('Content-Type')||'';
-  let data:Row;
+export async function api(path:string, options:RequestInit&{timeoutMs?:number}={}):Promise<any>{
+  const {timeoutMs,signal:callerSignal,...request}=options;
+  const controller=new AbortController();
+  const cancel=()=>controller.abort(callerSignal?.reason);
+  if(callerSignal?.aborted)cancel();else callerSignal?.addEventListener('abort',cancel,{once:true});
+  let timedOut=false;
+  const budget=timeoutMs??(path.startsWith('/health')||path==='/session'&&!request.method?8000:request.body instanceof FormData?300000:95000);
+  const timer=setTimeout(()=>{timedOut=true;controller.abort();},budget);
   try{
-    if(!/^application\/(?:[\w.+-]+\+)?json\b/i.test(contentType))throw new Error();
-    data=await response.json();
-    if(!data||typeof data!=='object'||Array.isArray(data))throw new Error();
-  }catch{throw new ApiError('INVALID_API_RESPONSE',response.status);}
-  if(!response.ok)throw new ApiError(String(data.error||data.detail||'SERVICE_UNAVAILABLE'),response.status);
-  return data;
+    controller.signal.throwIfAborted();
+    const headers=new Headers(request.headers);
+    if(request.body && !(request.body instanceof FormData))headers.set('Content-Type','application/json');
+    if(request.method && request.method!=='GET')headers.set('X-CSRF-Token',csrf);
+    const response=await fetch('/api'+path,{...request,signal:controller.signal,headers,credentials:'same-origin'});
+    const contentType=response.headers.get('Content-Type')||'';
+    let data:Row;
+    try{
+      if(!/^application\/(?:[\w.+-]+\+)?json\b/i.test(contentType))throw new Error();
+      data=await response.json();
+      if(!data||typeof data!=='object'||Array.isArray(data))throw new Error();
+    }catch(e){
+      if(controller.signal.aborted)throw e;
+      throw new ApiError('INVALID_API_RESPONSE',response.status);
+    }
+    if(!response.ok){
+      const code=response.status===404&&data.detail==='Not Found'?'API_ROUTE_NOT_FOUND':String(data.error||data.detail||'SERVICE_UNAVAILABLE');
+      throw new ApiError(code,response.status);
+    }
+    if(path==='/health'&&(data.status!=='ok'||data.hospital!=='10929'||!data.version))throw new ApiError('INVALID_API_RESPONSE',response.status);
+    return data;
+  }catch(e){
+    if(callerSignal?.aborted)throw callerSignal.reason;
+    if(timedOut)throw new ApiError('API_TIMEOUT',0);
+    if(e instanceof TypeError)throw new ApiError('NETWORK_UNAVAILABLE',0);
+    throw e;
+  }finally{
+    clearTimeout(timer);callerSignal?.removeEventListener('abort',cancel);
+  }
 }
 export const post=(path:string,body:Row={})=>api(path,{method:'POST',body:JSON.stringify(body)});
 export const money=(value:any)=>value===null||value===undefined||value===''?'—':new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
@@ -30,3 +54,7 @@ errorNames.LAUNCH_PARAMS_INVALID='พารามิเตอร์เปิด�
 errorNames.REPORT_TIMEOUT='อ่านรายงานเกินเวลาที่กำหนด กรุณาลดช่วงวันที่หรือลองใหม่';
 errorNames.INVALID_API_RESPONSE='บริการส่งข้อมูลกลับไม่ถูกต้อง กรุณาลองใหม่ หากยังพบปัญหาให้แจ้งผู้ดูแลตรวจ API และ gateway';
 errorNames.SERVICE_DRAINING='ระบบกำลังอัปเดต กรุณาลองใหม่หลังบริการกลับมา';
+errorNames.API_TIMEOUT='บริการตอบกลับไม่ทันเวลา กรุณาลองใหม่ หากเป็นงานนำเข้าให้ตรวจสถานะงานเดิมก่อนส่งซ้ำ';
+errorNames.NETWORK_UNAVAILABLE='เชื่อมต่อบริการไม่ได้ กรุณาตรวจเครือข่ายและลองใหม่';
+errorNames.API_ROUTE_NOT_FOUND='ยังเข้าถึง API ของ STMREP ไม่ได้ ให้ผู้ดูแลตรวจ container และ routing ของ /api';
+errorNames.ORIGIN_REJECTED='โดเมน STMREP ยังไม่ได้รับอนุญาต กรุณาแจ้งผู้ดูแลตั้ง APP_ORIGINS ให้ตรงกับ URL ของระบบ';

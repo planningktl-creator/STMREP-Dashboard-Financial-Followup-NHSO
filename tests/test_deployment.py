@@ -124,3 +124,33 @@ def test_operational_middleware_preserves_financial_guard(tmp_path):
     with TestClient(app) as client:
         response=client.get('/api/test-denied')
         assert response.status_code==409 and response.json()=={'error':'RECEIPT_OVER_ALLOCATED'}
+
+
+def test_v2_origin_allows_session_handshake_and_rejects_other_origins(tmp_path,monkeypatch):
+    from financial.bms import Session
+    origin='https://stm-rep-v2-10929.kube.bmscloud.in.th'
+    settings=Settings(mode='live',worker_enabled=False,data_dir=tmp_path,
+                      origins=(origin,),cookie_secure=True)
+    app=create_app(settings)
+    created=[]
+    def connect(code,marketplace=None):
+        session=Session('synthetic-cookie','synthetic-actor','https://his.example.invalid',
+            'synthetic-bearer',None,'10929',time.time()+3600,'synthetic-csrf')
+        app.state.sessions.active[session.cookie]=session
+        created.append(code)
+        return session
+    monkeypatch.setattr(app.state.sessions,'connect',connect)
+    with TestClient(app,base_url='https://testserver') as client:
+        denied=client.post('/api/session',headers={'Origin':'https://untrusted.example.invalid'},
+            json={'session_code':'SYNTHETIC_UNTRUSTED'})
+        assert denied.status_code==403 and denied.json()=={'error':'ORIGIN_REJECTED'}
+        assert created==[]
+        connected=client.post('/api/session',headers={'Origin':origin},
+            json={'session_code':'SYNTHETIC_BMS_SESSION'})
+        assert connected.status_code==200
+        assert connected.json()['hospital']=='10929'
+        assert created==['SYNTHETIC_BMS_SESSION']
+        assert 'HttpOnly' in connected.headers['set-cookie']
+        assert 'Secure' in connected.headers['set-cookie']
+        current=client.get('/api/session')
+        assert current.status_code==200 and current.json()['hospital']=='10929'

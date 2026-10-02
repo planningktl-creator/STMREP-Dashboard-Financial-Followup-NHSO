@@ -1,6 +1,8 @@
 # ส่งต่อผู้ดูแล BMS: persistent storage ก่อนเปิด STMREP จริง
 
-สถานะตรวจวันที่ 2 ตุลาคม 2569 (Asia/Bangkok): ผู้ดูแลโครงการเลือก **รอ persistent storage แล้วเปิดระบบจริง** จึงพัก auto-deploy และคงแอปที่ Sleeping โดยไม่เปิดโหมดจำลองบน domain นี้
+สถานะตรวจวันที่ 2 ตุลาคม 2569 (Asia/Bangkok): ผู้ดูแลโครงการเลือก **รอ persistent storage แล้วเปิดระบบจริง** จึงพัก auto-deploy และไม่เปิดโหมดจำลองบน production domain
+
+ภายหลังพบ domain v2 `https://stm-rep-v2-10929.kube.bmscloud.in.th` ซึ่งหน้าเว็บและ liveness ตอบรุ่น `0.2.0-rc.3` commit `b34d9d0` แต่ผู้ใช้เชื่อม Session ไม่ผ่านเพราะ `ORIGIN_REJECTED` ต้องตั้ง `APP_ORIGINS` ให้ตรง domain v2 Readiness URL สาธารณะตอบหน้า HTML `App Starting` แทน JSON จึงยังไม่ทราบ PVC/runtime configuration ภายในของ v2 และห้ามสรุปว่าสถานะ PVC ของ app เดิมใช้กับ v2 ได้
 
 ## ข้อเท็จจริงจาก portal
 
@@ -46,7 +48,7 @@ kubectl -n portal-10929 get pvc stmrep-data
 |---|---|
 | `PORT` | `8000` |
 | `APP_MODE` / `HOSPITAL_CODE` | `live` / `10929` |
-| `APP_ORIGINS` | `https://stm-rep-dashboard-10929.kube.bmscloud.in.th` |
+| `APP_ORIGINS` | `https://stm-rep-v2-10929.kube.bmscloud.in.th` สำหรับ v2; exact HTTPS origin ไม่มี slash ท้าย |
 | `COOKIE_SECURE` | `true` |
 | `DATA_DIR` | `/app/.data` |
 | `WORKER_ENABLED` | `true` หลัง backup/migration และตรวจ PVC แล้ว |
