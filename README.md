@@ -19,6 +19,7 @@ Repository มี root `package.json` คอย delegate คำสั่ง buil
 - [สถาปัตยกรรมและคู่มือติดตั้ง](docs/IMPLEMENTATION_PLAN.md): BMS Session, นำเข้า XLS, resume, deployment, backup และเกณฑ์ตรวจรับ
 - [ผลตรวจรับ](docs/ACCEPTANCE.md): ผลที่ตรวจแล้วและข้อที่ต้องตรวจด้วยข้อมูลจริงภายในโรงพยาบาล
 - [Build/deploy BMS](docs/DEPLOY_BMS.md): container contract, runtime secrets, probes และ rollout
+- [ส่งต่อผู้ดูแล BMS](docs/BMS_PLATFORM_HANDOFF.md): source ใน Gitea, persistent storage, auto-sleep และขั้นตอนเปิดระบบจริงของแอปเดิม
 - [Backup/restore/rollback](docs/BACKUP_RESTORE.md): เก็บ DB กับ archive/checkpoint พร้อมกัน
 - [ผลตรวจ deployment release](docs/RELEASE_ACCEPTANCE.md): Docker, Session, CI และการกู้คืนด้วย fixture จำลอง
 - [Machine dictionary](financial/dictionary.json), [mapping registry](repstm/mapping_registry.json), [approved layouts](repstm/approved_layouts.json)

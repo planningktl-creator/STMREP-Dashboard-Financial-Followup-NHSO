@@ -2,6 +2,8 @@
 
 ## ตั้งค่าหน้า deployment ของ BMS
 
+ผลสำรวจ portal ของแอปเดิม: ใช้ Dedicated Pod และ Gitea repo `STMREP-Dashboard` ซึ่งเป็นสำเนานำเข้าคนละ repo กับ GitHub ต้อง sync SHA ก่อน rebuild ผู้ดูแลโครงการเลือกพัก deployment รอ persistent storage ดู [ขั้นตอนส่งต่อผู้ดูแล BMS](BMS_PLATFORM_HANDOFF.md) สำหรับชื่อแอปจริง, PVC, runtime configuration และ auto-sleep
+
 เลือก **Docker/Container** ในหน้า deployment ของแอปนี้ แล้วกำหนดค่าดังตาราง ชื่อช่องอาจต่างกันตามหน้า BMS ให้ใช้ความหมายของค่าเป็นหลัก
 
 | ช่องตั้งค่า | ค่าที่ใช้ |
