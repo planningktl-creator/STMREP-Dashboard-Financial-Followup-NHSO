@@ -1,0 +1,11 @@
+{
+  "name": "stmrep-dashboard-financial-followup-nhso",
+  "version": "0.2.0-rc.2",
+  "private": true,
+  "description": "Hospital 10929 financial follow-up and STM/REP reconciliations",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "check": "npm --prefix frontend run check",
+    "check-launch": "node frontend/scripts/check-launch.mjs"
+  }
+}

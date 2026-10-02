@@ -33,6 +33,14 @@ spec:
       labels: {app: stmrep}
     spec:
       terminationGracePeriodSeconds: 150
+      # Dedicated Node Pinning (optional for dedicated hospital nodes):
+      # nodeSelector:
+      #   role: financial-dedicated
+      # tolerations:
+      #   - key: "dedicated"
+      #     operator: "Equal"
+      #     value: "financial"
+      #     effect: "NoSchedule"
       securityContext:
         runAsUser: 10929
         runAsGroup: 10929
@@ -58,7 +66,7 @@ spec:
             readOnlyRootFilesystem: true
             capabilities: {drop: [ALL]}
           resources:
-            requests: {cpu: 250m, memory: 512Mi}
+            requests: {cpu: '2', memory: 2Gi}
             limits: {cpu: '2', memory: 2Gi}
           volumeMounts:
             - {name: data, mountPath: /app/.data}
@@ -82,7 +90,9 @@ spec:
       volumes:
         - {name: data, persistentVolumeClaim: {claimName: stmrep-data}}
         - name: temporary
-          emptyDir: {sizeLimit: 1Gi}
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
 ---
 apiVersion: v1
 kind: Service

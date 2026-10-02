@@ -45,10 +45,17 @@ STMREP มี FastAPI และ worker ภายใน container เดียว
 | Domain/TLS | HTTPS domain ของแอป; `APP_ORIGINS` ตรง origin จริง |
 | Runtime secret | PGWEB_URL, BMS_ALLOWED_HOSTS แบบ exact host ที่อนุญาต; ใส่ผ่านแพลตฟอร์ม |
 | Storage | mount `/app/.data` ให้ UID/GID 10929 เขียนได้; persistent encrypted storage ตามนโยบายโรงพยาบาล |
-| Upload temp | `/tmp/stmrep` แยกจาก archive/checkpoint; ต้องเขียนได้เมื่อ root filesystem read-only |
+| Upload temp | `/tmp/stmrep` แยกจาก archive/checkpoint; ใช้ in-memory RAM disk (`emptyDir.medium: Memory` หรือ `tmpfs`) ขนาด 1Gi เพื่อเร่งความเร็วการแตกไฟล์และ parse XLS ขนาดใหญ่ |
 | Ingress | body 301 MiB, read timeout 120s, request buffering off; ไม่บันทึก query string/body/credentials |
-| Rollout | Recreate, termination grace 150s; ไม่มี autoscaling |
-| Resource | template เริ่ม request 250m/512Mi, limit 2 CPU/2Gi, PVC 32Gi; เป็นค่าเริ่มต้นที่ต้องวัด largest file และ concurrent usage ก่อน production |
+| Rollout | Recreate, termination grace 150s; ไม่มี autoscaling (1 replica เท่านั้น) |
+| Resource | Dedicated Pod กำหนด **Guaranteed QoS** (`requests` = `limits` = 2 CPU / 2Gi RAM) ป้องกัน OOM eviction บนคลัสเตอร์; PVC 32Gi SSD (ReadWriteOnce) |
+
+### การตั้งค่า Dedicated Pod บน Kubernetes อย่างมีประสิทธิภาพ
+
+1. **Guaranteed QoS Class**: กำหนด `requests` เท่ากับ `limits` ใน `deploy/kubernetes.yaml` ทำให้ Pod ไม่ถูก Kubernetes สั่ง Evict เมื่อหน่วยความจำของโหนดตึงตัว
+2. **In-Memory RAM Disk**: ตั้งค่า `/tmp/stmrep` เป็น `emptyDir: {medium: Memory, sizeLimit: 1Gi}` เพื่อให้การรับไฟล์ XLS/REP และ parse BIFF ทำงานบน RAM ทั้งหมด
+3. **Dedicated Node Pinning**: หากต้องการแยกโหนดเฉพาะสำหรับงานการเงิน ให้ปลดคอมเมนต์ `nodeSelector` และ `tolerations` ใน `deploy/kubernetes.yaml` เพื่อผูก Pod เข้ากับโหนดที่ติด Taint ไว้
+4. **Root Build Delegation**: Repository มี root `package.json` คอย delegate สคริปต์ `npm run build` ไปยัง `frontend/` เพื่อให้แพลตฟอร์มที่ค้นหาไฟล์ที่ root ไม่ล้มเหลว แต่การเปิดใช้งานจริงยังต้องเป็น Docker/Container เพื่อให้ FastAPI/worker ทำงานครบถ้วน
 
 ต้องยืนยันว่าแพลตฟอร์มรองรับ Python process ต่อเนื่อง, persistent storage, Secret และ outbound HTTPS ไป pgweb/PasteJSON/BMS การมี static app deploy ได้ยังไม่ยืนยันข้อกำหนดเหล่านี้
 
