@@ -6,7 +6,7 @@ from decimal import Decimal
 import json
 import uuid
 
-from .db import Database, literal, ident, json_sql
+from .db import Database, literal, ident, json_sql, scoped_database, database_request
 from .domain import aging, peer_summary, number, ratio
 from .rules import evaluate
 
@@ -52,25 +52,33 @@ class Repository:
     def __init__(self, settings):
         self.settings=settings
 
-    def db(self):return Database(self.settings.pgweb_url)
+    def db(self):return scoped_database(self.settings.pgweb_url)
 
+    @database_request
     def snapshots(self):
         return [json_values(r) for r in self.db().rows(f"SELECT id::text AS id,dstart::text,dend::text,status,coverage,registry_profile,cost_semantics,created_at::text,completed_at::text FROM his.snapshots WHERE hcode={literal(self.settings.hospital)} ORDER BY created_at DESC LIMIT 50")]
 
-    def snapshot(self, snapshot_id=None):
-        db=self.db()
+    def snapshot_sql(self,snapshot_id=None):
         where=f' AND id={ident(snapshot_id)}' if snapshot_id else " AND status IN ('ready','partial')"
-        rows=db.rows(f"SELECT id::text AS id,dstart::text,dend::text,status,coverage,registry_profile,cost_semantics,completed_at::text AS as_of FROM his.snapshots WHERE hcode={literal(self.settings.hospital)}{where} ORDER BY completed_at DESC NULLS LAST LIMIT 1")
+        return f"SELECT id::text AS id,dstart::text,dend::text,status,coverage,registry_profile,cost_semantics,completed_at::text AS as_of FROM his.snapshots WHERE hcode={literal(self.settings.hospital)}{where} ORDER BY completed_at DESC NULLS LAST LIMIT 1"
+
+    @database_request
+    def snapshot(self, snapshot_id=None):
+        rows=self.db().rows(self.snapshot_sql(snapshot_id))
         return json_values(rows[0]) if rows else None
 
     def condition(self,snapshot,start,end,care=None,status=None,search=None):
-        sql=f'c.snapshot_id={ident(snapshot)} AND c.hcode={literal(self.settings.hospital)}'
+        snapshot_ref=ident(snapshot) if snapshot else '(SELECT id::uuid FROM selected_snapshot)'
+        sql=f'c.snapshot_id={snapshot_ref} AND c.hcode={literal(self.settings.hospital)}'
         if start:sql+=f' AND c.service_date>={literal(start)}::date'
         if end:sql+=f' AND c.service_date<={literal(end)}::date'
         if care in ('IP','OP'):sql+=' AND c.care_type='+literal(care)
         if status=='FOLLOWUP':sql+=" AND (c.tracking_status NOT IN ('MATCHED','NOT_COVERED') OR c.open_task_count>0)"
         elif status:sql+=' AND c.tracking_status='+literal(status)
-        if search:sql+=f" AND (position({literal(search)} in coalesce(c.hn,''))>0 OR position({literal(search)} in coalesce(c.an,''))>0 OR position({literal(search)} in coalesce(c.vn,''))>0 OR position(lower({literal(search)}) in lower(coalesce(c.name,'')))>0)"
+        if search:
+            escaped=search.replace('!', '!!').replace('%', '!%').replace('_', '!_')
+            names='' if search.isdecimal() else f" OR position(lower({literal(search)}) in lower(coalesce(c.name,'')))>0"
+            sql+=f" AND (c.hn LIKE {literal(escaped+'%')} ESCAPE '!' OR c.an LIKE {literal(escaped+'%')} ESCAPE '!' OR c.vn LIKE {literal(escaped+'%')} ESCAPE '!'{names})"
         return sql
 
     def meta(self,snapshot,start,end):
@@ -82,13 +90,41 @@ class Repository:
                 'snapshot_status':snapshot.get('status') if snapshot else 'unavailable',
                 'claim_denominator_status':'REQUIRES_VERIFIED_RULES'}
 
+    def refresh_meta(self,db):
+        result=db.json(f'SELECT analytics.refresh_status({literal(self.settings.hospital)})')
+        return {'data_revision':result['data_revision'],'refresh_state':result['state']}
+
     def derived_stats(self,db,where,snapshot_id):
+        return db.json(self.overview_sql(where,snapshot_id))
+
+    def overview_sql(self,where,snapshot_id,start=None,end=None,snapshot_sql=None):
         sums=','.join('sum('+f+')::text AS '+f for f in ['his_charge_amount','observed_item_cost','estimated_item_cost','rep_expected_amount','rep_nhso_amount','stm_net_amount','submitted_amount','cash_received_amount'])
+        ancillary=''
+        snapshot_ref=ident(snapshot_id) if snapshot_id else '(SELECT id::uuid FROM selected_snapshot)' if snapshot_sql else 'NULL::uuid'
+        selection=('selected_snapshot AS MATERIALIZED ('+snapshot_sql+'), ' if snapshot_sql else '')
+        if start is not None:
+            hospital=literal(self.settings.hospital)
+            ancillary=f"""
+             'statement',(SELECT coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM (
+                SELECT patient_type,sum(rep_count)::bigint AS rep_count,sum(stm_count)::bigint AS stm_count,
+                sum(billed_amount)::text AS rep_billed_amount,sum(expected_amount)::text AS rep_expected_amount,
+                sum(statement_amount)::text AS statement_amount,min(refreshed_at)::text AS as_of
+                FROM reporting.monthly_totals WHERE hcode={hospital} AND basis='service'
+                AND month>=date_trunc('month',{literal(start)}::date) AND month<=date_trunc('month',{literal(end)}::date) GROUP BY patient_type) t),
+             'refresh',analytics.refresh_status({hospital}),
+             'sources',(SELECT coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM (
+                SELECT d.source,count(*) AS files,count(DISTINCT d.id) AS documents FROM ingest.files f JOIN ingest.documents d ON d.id=f.document_id WHERE d.hcode={hospital} GROUP BY d.source) t),
+             'unallocated_dates',(SELECT jsonb_build_object('encounters',count(*) FILTER(WHERE service_date IS NULL),'active_admissions',count(*) FILTER(WHERE care_type='IP' AND discharged_at IS NULL)) FROM his.cases WHERE snapshot_id={snapshot_ref}),
+             'reviews',(SELECT coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM (SELECT code,severity,count(*) AS count FROM his.issues WHERE snapshot_id={snapshot_ref} GROUP BY 1,2 ORDER BY 3 DESC) t),
+             'verified_rules',(SELECT count(*) FROM followup.rule_packs WHERE verification='applicability_verified'),
+            """
         # One PostgreSQL statement shares one MVCC snapshot for all derived totals.
         # Materialize the expensive financial view once, rather than per KPI.
-        return db.json(f"""WITH scoped AS MATERIALIZED (
+        if snapshot_sql:ancillary+="'snapshot',(SELECT to_jsonb(s) FROM selected_snapshot s),"
+        return f"""WITH {selection}scoped AS MATERIALIZED (
             SELECT c.* FROM analytics.case_financials c WHERE {where}
         ) SELECT jsonb_build_object(
+         {ancillary}
          'report_at',CURRENT_TIMESTAMP::text,
          'input_document_ids',(SELECT coalesce(jsonb_agg(id ORDER BY id),'[]'::jsonb) FROM ingest.documents WHERE hcode={literal(self.settings.hospital)} AND status='ready' AND is_current),
          'his',(SELECT to_jsonb(t) FROM (SELECT count(*) AS encounters,count(DISTINCT hn) AS patients,
@@ -113,20 +149,23 @@ class Repository:
             SELECT tracking_status,count(*) AS count FROM scoped GROUP BY 1) t),
          'worklist',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY id),'[]'::jsonb) FROM (
             SELECT {SELECT_CASE} FROM scoped c WHERE c.tracking_status NOT IN ('MATCHED','NOT_COVERED') OR c.open_task_count>0 ORDER BY c.id LIMIT 8) t)
-        )""")
+        )"""
 
+    @database_request
     def overview(self,start,end,snapshot_id=None):
-        db=self.db();snap=self.snapshot(snapshot_id);meta=self.meta(snap,start,end)
-        statement=db.rows(f"SELECT patient_type,sum(rep_count)::bigint AS rep_count,sum(stm_count)::bigint AS stm_count,sum(billed_amount)::text AS rep_billed_amount,sum(expected_amount)::text AS rep_expected_amount,sum(statement_amount)::text AS statement_amount,min(refreshed_at)::text AS as_of FROM reporting.monthly_totals WHERE hcode={literal(self.settings.hospital)} AND basis='service' AND month>=date_trunc('month',{literal(start)}::date) AND month<=date_trunc('month',{literal(end)}::date) GROUP BY patient_type")
-        dirty=db.rows('SELECT (SELECT count(*) FROM reporting.dirty_claims) AS claims,(SELECT count(*) FROM reporting.dirty_months) AS months')[0]
-        meta['statement_cache']={'scope':'whole_months','stale':bool(dirty['claims'] or dirty['months']),'dirty':dirty}
-        sources=db.rows(f"SELECT d.source,count(*) AS files,count(DISTINCT d.id) AS documents FROM ingest.files f JOIN ingest.documents d ON d.id=f.document_id WHERE d.hcode={literal(self.settings.hospital)} GROUP BY d.source")
+        db=self.db()
+        db.transport.priority=1  # Interactive case lookups and leases precede overview.
+        derived=db.report_json(self.overview_sql(self.condition(None,start,end),None,start,end,self.snapshot_sql(snapshot_id)))
+        snap=derived['snapshot'];meta=self.meta(snap,start,end)
+        statement,sources=derived['statement'],derived['sources']
+        refresh=derived['refresh'];dirty=refresh['pending']
+        meta.update(data_revision=refresh['data_revision'],refresh_state=refresh['state'])
+        meta['statement_cache']={'scope':'whole_months','stale':refresh['state']!='ready','dirty':dirty}
         if not snap:
             return {'meta':meta,'his':None,'financial':{'his_charge_amount':None,'observed_item_cost':None,'rep_nhso_amount':None,'stm_net_amount':None,'cash_received_amount':None},
                     'statement':statement,'sources':sources,'trend':[],'status_counts':[],'worklist':[],
                     'completeness':{'status':'HIS_NOT_CONNECTED','submission_rate':None,'rep_rate':None,'stm_rate':None}}
         where=self.condition(snap['id'],start,end)
-        derived=self.derived_stats(db,where,snap['id'])
         his=derived['his'];financial=derived['financial']
         meta.update(his_as_of=snap.get('as_of'),as_of=derived['report_at'],
                     rep_stm_input_document_ids=derived['input_document_ids'],aggregate_consistency='single_postgresql_statement')
@@ -138,35 +177,43 @@ class Repository:
             his['cmi']=None
         protect_denominators(his,snap)
         his['registry']=snap.get('registry_profile')
-        his['unallocated_dates']=db.rows(f"SELECT count(*) FILTER(WHERE service_date IS NULL) AS encounters,count(*) FILTER(WHERE care_type='IP' AND discharged_at IS NULL) AS active_admissions FROM his.cases WHERE snapshot_id={ident(snap['id'])}")[0]
+        his['unallocated_dates']=derived['unallocated_dates']
         if not source_complete(snap,'ip'):
             his['unallocated_dates']={'encounters':None,'active_admissions':None}
         trend=derived['trend'];statuses=derived['statuses'];sample=derived['worklist']
         for case in sample:
             json_values(case)
             case['aging']=aging(date.fromisoformat(str(case['service_date'])[:10]) if case.get('service_date') else None,datetime.now(ZoneInfo('Asia/Bangkok')).date())
-        reviews=db.rows(f"SELECT code,severity,count(*) AS count FROM his.issues WHERE snapshot_id={ident(snap['id'])} GROUP BY 1,2 ORDER BY 3 DESC")
-        rules=self.rule_list()
+        reviews=derived['reviews']
         # No whole-population rate until eligible denominator and event coverage are verified.
         return {'meta':meta,'his':his,'financial':financial,'statement':statement,'sources':sources,'trend':trend,
                 'status_counts':statuses,'worklist':sample,'quality':reviews,
-                'completeness':{'status':'REQUIRES_VERIFIED_RULES','verified_rules':sum(r['verification']=='applicability_verified' for r in rules),
+                'completeness':{'status':'REQUIRES_VERIFIED_RULES','verified_rules':derived['verified_rules'],
                                 'submission_rate':None,'rep_rate':None,'stm_rate':None}}
 
+    @database_request
     def cases(self,start,end,snapshot_id=None,care=None,status=None,search=None,cursor=0,limit=50):
-        snap=self.snapshot(snapshot_id)
-        if not snap:return {'items':[],'next_cursor':None,'meta':self.meta(None,start,end),'count':None}
-        where=self.condition(snap['id'],start,end,care,status,search)
         db=self.db()
-        rows=db.rows(f'SELECT {SELECT_CASE} FROM analytics.case_financials c WHERE {where} AND c.id>{int(cursor)} ORDER BY c.id LIMIT {int(limit)+1}')
+        where=self.condition(None,start,end,care,status,search)
+        count_sql=f'(SELECT count(*) FROM his.cases c WHERE {where})' if not status else 'NULL'
+        result=db.report_json(f"""WITH selected_snapshot AS MATERIALIZED ({self.snapshot_sql(snapshot_id)}),
+          page AS MATERIALIZED (SELECT {SELECT_CASE} FROM analytics.case_financials c WHERE {where}
+            AND c.id>{int(cursor)} ORDER BY c.id LIMIT {int(limit)+1})
+          SELECT jsonb_build_object('snapshot',(SELECT to_jsonb(s) FROM selected_snapshot s),
+            'items',(SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY id),'[]'::jsonb) FROM page p),
+            'count',{count_sql},'refresh',analytics.refresh_status({literal(self.settings.hospital)}))""")
+        snap=result['snapshot'];meta=self.meta(snap,start,end)
+        meta.update(data_revision=result['refresh']['data_revision'],refresh_state=result['refresh']['state'])
+        if not snap:return {'items':[],'next_cursor':None,'meta':meta,'count':None}
+        rows=result['items']
         more=len(rows)>limit;rows=rows[:limit]
         for row in rows:
             json_values(row)
             row['aging']=aging(date.fromisoformat(str(row['service_date'])[:10]) if row.get('service_date') else None,datetime.now(ZoneInfo('Asia/Bangkok')).date())
             row['aging']['basis']='service_date_not_actual_submission_lag'
-        count=db.scalar(f'SELECT count(*) FROM his.cases c WHERE '+where.split(' AND c.tracking_status=')[0]) if not status else None
-        return {'items':rows,'next_cursor':rows[-1]['id'] if more else None,'meta':self.meta(snap,start,end),'count':count}
+        return {'items':rows,'next_cursor':rows[-1]['id'] if more else None,'meta':meta,'count':result['count']}
 
+    @database_request
     def case(self,case_id):
         db=self.db()
         rows=db.rows(f'SELECT {SELECT_CASE} FROM analytics.case_financials c WHERE c.id={int(case_id)} AND c.hcode={literal(self.settings.hospital)}')
@@ -188,11 +235,13 @@ class Repository:
                 'tasks':tasks,'appeals':appeals,'rule':rules,'peers':self.peers(case),
                 'readmission':self.readmission(case),'instruments':self.instruments(case),
                 'truncation':{'diagnoses':len(diagnoses)>=100,'procedures':len(procedures)>=100,'statements':len(statements)>=200},
-                'meta':{'snapshot_id':snapshot,'as_of':case['as_of'],'mode':'live'}}
+                'meta':{'snapshot_id':snapshot,'as_of':case['as_of'],'mode':'live',**self.refresh_meta(db)}}
 
+    @database_request
     def case_lines(self,case_id,cursor,limit):
         return self.db().rows(f"SELECT l.id,l.icode,l.billcode,l.item_name,l.unit,l.quantity::text,l.charge_amount::text,l.observed_item_cost::text,l.estimated_item_cost::text,l.cost_method FROM his.case_lines l JOIN his.cases c ON c.id=l.case_id WHERE c.id={int(case_id)} AND c.hcode={literal(self.settings.hospital)} AND l.id>{int(cursor)} ORDER BY l.id LIMIT {int(limit)+1}")
 
+    @database_request
     def readmission(self,case):
         if case['care_type']!='IP' or not case.get('discharged_at') or case['identity_status']!='unique':
             return {'observed':None,'reason':'DISCHARGE_OR_IDENTITY_UNAVAILABLE'}
@@ -206,11 +255,13 @@ class Repository:
                      and coverage.get('state')=='complete' and coverage.get('admission_dates_covered'))
         return {'observed':True if rows else False if covered else None,'window_complete':covered,'admissions':rows,'scope':'โรงพยาบาลนี้และ snapshot นี้; ไม่สรุปว่าเป็น unplanned readmission'}
 
+    @database_request
     def instruments(self,case):
         db=self.db()
         rows=db.rows(f"WITH actual AS (SELECT billcode,count(*) AS line_count,sum(quantity) AS quantity,sum(charge_amount) AS charge FROM his.case_lines WHERE case_id={int(case['id'])} AND billcode IS NOT NULL AND EXISTS(SELECT 1 FROM followup.instrument_catalog cat WHERE cat.icode=his.case_lines.icode) GROUP BY billcode),reported AS (SELECT i.item_code AS billcode,sum(i.quantity) AS quantity,sum(i.compensation_amount) AS compensation,count(*) AS records FROM eclaim.rep_instrument_items i JOIN followup.claim_links l ON l.claim_id=i.claim_id AND l.case_id={int(case['id'])} AND l.status='linked' JOIN reporting.rep_latest r ON r.id=i.rep_claim_id GROUP BY i.item_code) SELECT coalesce(a.billcode,r.billcode) AS billcode,a.line_count,a.quantity::text AS his_quantity,a.charge::text AS his_charge,r.quantity::text AS rep_quantity,r.compensation::text AS rep_compensation,r.records FROM actual a FULL JOIN reported r USING(billcode) ORDER BY coalesce(a.billcode,r.billcode) LIMIT 101")
         return {'items':rows[:100],'truncated':len(rows)>100,'basis':'catalog identity observed; current rates/eligibility unverified','complete_rate':None}
 
+    @database_request
     def peers(self,case):
         if not case.get('pttype'):
             return {'status':'UNAVAILABLE','reason':'PAYER_MISSING','count':0}
@@ -232,17 +283,21 @@ class Repository:
                 'definition':'IP: payer, DRG/version, age band, LOS band; OP: payer, ICD3, age band',
                 'clinical_adjustment':'descriptive_not_risk_adjusted'}
 
+    @database_request
     def rule_list(self):
         return [json_values(r) for r in self.db().rows(f"SELECT id::text,name,version,care_type,payer_code,effective_from::text,effective_to::text,verification,authority_url,authority_clause,review_reference,definition FROM followup.rule_packs ORDER BY name,version")]
 
+    @database_request
     def appeals(self,encounter=None):
         where=f'hcode={literal(self.settings.hospital)}'
         if encounter:where+=' AND encounter_key='+literal(encounter)
         return [json_values(r) for r in self.db().rows(f"SELECT id::text,encounter_key,claim_id,reason,status,baseline_amount::text,baseline_rows,opened_at::text,sent_at::text,outcome,incremental_amount::text,result_rows,effect_type,source_ref FROM followup.appeals WHERE {where} ORDER BY opened_at DESC LIMIT 200")]
 
+    @database_request
     def jobs(self):
         return [json_values(r) for r in self.db().rows('SELECT id::text,kind,status,progress,result,error_code,created_at::text,updated_at::text FROM followup.jobs ORDER BY created_at DESC LIMIT 100')]
 
+    @database_request
     def job(self,job_id):
         rows=self.db().rows(f'SELECT id::text,kind,status,progress,result,error_code,created_at::text,updated_at::text FROM followup.jobs WHERE id={ident(job_id)}')
         if not rows:return None
@@ -250,6 +305,7 @@ class Repository:
         result['files']=[json_values(r) for r in self.db().rows(f'SELECT id::text,source,filename,byte_size,sha256,status,profile FROM followup.job_files WHERE job_id={ident(job_id)} ORDER BY filename')]
         return result
 
+    @database_request
     def quality(self,snapshot=None):
         snap=self.snapshot(snapshot)
         db=self.db()
@@ -258,6 +314,7 @@ class Repository:
         return {'snapshot':snap,'his':[json_values(r) for r in his],'rep_stm':rep,
                 'message':'Schema presence does not certify source availability, cost semantics or deadlines.'}
 
+    @database_request
     def orphan_claims(self,start,end,cursor=0,limit=50,snapshot=None):
         snap=self.snapshot(snapshot)
         where=f"c.hcode={literal(self.settings.hospital)} AND c.id>{int(cursor)} AND EXISTS(SELECT 1 FROM reporting.rep_current r WHERE r.claim_id=c.id AND r.service_date BETWEEN {literal(start)}::date AND {literal(end)}::date UNION ALL SELECT 1 FROM reporting.stm_current s WHERE s.claim_id=c.id AND s.service_date BETWEEN {literal(start)}::date AND {literal(end)}::date)"

@@ -1,4 +1,4 @@
-# Build และ deploy BMS — 0.2.0-rc.1
+# Build และ deploy BMS — 0.2.0-rc.3
 
 ## ตั้งค่าหน้า deployment ของ BMS
 
@@ -47,17 +47,18 @@ STMREP มี FastAPI และ worker ภายใน container เดียว
 | Domain/TLS | HTTPS domain ของแอป; `APP_ORIGINS` ตรง origin จริง |
 | Runtime secret | PGWEB_URL, BMS_ALLOWED_HOSTS แบบ exact host ที่อนุญาต; ใส่ผ่านแพลตฟอร์ม |
 | Storage | mount `/app/.data` ให้ UID/GID 10929 เขียนได้; persistent encrypted storage ตามนโยบายโรงพยาบาล |
-| Upload temp | `/tmp/stmrep` แยกจาก archive/checkpoint; ใช้ in-memory RAM disk (`emptyDir.medium: Memory` หรือ `tmpfs`) ขนาด 1Gi เพื่อเร่งความเร็วการแตกไฟล์และ parse XLS ขนาดใหญ่ |
+| Upload temp | `/tmp/stmrep` แยกจาก archive/checkpoint; ใช้ disk-backed `emptyDir` ขนาดจำกัด 1Gi; ไม่ตั้ง `medium: Memory` เพราะ RAM disk นับรวมใน memory limit |
 | Ingress | body 301 MiB, read timeout 120s, request buffering off; ไม่บันทึก query string/body/credentials |
 | Rollout | Recreate, termination grace 150s; ไม่มี autoscaling (1 replica เท่านั้น) |
-| Resource | Dedicated Pod กำหนด **Guaranteed QoS** (`requests` = `limits` = 2 CPU / 2Gi RAM) ป้องกัน OOM eviction บนคลัสเตอร์; PVC 32Gi SSD (ReadWriteOnce) |
+| Resource | Dedicated Pod กำหนด **Guaranteed QoS** (`requests` = `limits` = 2 CPU / 2Gi RAM) ช่วยจัดลำดับ QoS แต่ยังอาจ OOM หรือถูก eviction ได้; PVC 32Gi SSD (ReadWriteOnce) |
 
 ### การตั้งค่า Dedicated Pod บน Kubernetes อย่างมีประสิทธิภาพ
 
-1. **Guaranteed QoS Class**: กำหนด `requests` เท่ากับ `limits` ใน `deploy/kubernetes.yaml` ทำให้ Pod ไม่ถูก Kubernetes สั่ง Evict เมื่อหน่วยความจำของโหนดตึงตัว
-2. **In-Memory RAM Disk**: ตั้งค่า `/tmp/stmrep` เป็น `emptyDir: {medium: Memory, sizeLimit: 1Gi}` เพื่อให้การรับไฟล์ XLS/REP และ parse BIFF ทำงานบน RAM ทั้งหมด
-3. **Dedicated Node Pinning**: หากต้องการแยกโหนดเฉพาะสำหรับงานการเงิน ให้ปลดคอมเมนต์ `nodeSelector` และ `tolerations` ใน `deploy/kubernetes.yaml` เพื่อผูก Pod เข้ากับโหนดที่ติด Taint ไว้
-4. **Root Build Delegation**: Repository มี root `package.json` คอย delegate สคริปต์ `npm run build` ไปยัง `frontend/` เพื่อให้แพลตฟอร์มที่ค้นหาไฟล์ที่ root ไม่ล้มเหลว แต่การเปิดใช้งานจริงยังต้องเป็น Docker/Container เพื่อให้ FastAPI/worker ทำงานครบถ้วน
+1. **Resources**: `requests` = `limits` = 2 CPU / 2Gi ทำให้ได้ Guaranteed QoS แต่ไม่ได้รับประกันว่าจะไม่ OOM/evict; Dedicated Pod ไม่ใช่ node ส่วนตัว
+2. **Temporary disk**: `/tmp/stmrep` เป็น `emptyDir: {sizeLimit: 1Gi}` บนดิสก์ และแอปจำกัด reservation พร้อมตรวจพื้นที่ก่อนรับไฟล์; Compose ใช้ named disk volume โดย quota ต้องกำหนดที่ host
+3. **Persistent archive**: PVC 32Gi ที่ `/app/.data`; ปิด auto-sleep และคงหนึ่ง replica / Recreate ก่อนเปิด production
+4. **Root build**: `npm run build` ติดตั้ง dependencies ด้วย frontend lockfile แล้ว build SPA; Dockerfile เป็นช่องทาง deploy ทั้ง API/worker
+5. **Source evidence**: build จาก checkout ใหม่ ตรวจ GitHub/Gitea SHA ตรงกัน ส่ง `BUILD_REVISION` เป็น build arg สำหรับ OCI label; หาก BMS ไม่ส่ง arg Docker อ่านเฉพาะ HEAD/main ref แล้วบันทึก `/app/build-revision` และ `/api/health.build_revision` โดยไม่คัดลอก Git config หรือ objects เข้า runtime
 
 ต้องยืนยันว่าแพลตฟอร์มรองรับ Python process ต่อเนื่อง, persistent storage, Secret และ outbound HTTPS ไป pgweb/PasteJSON/BMS การมี static app deploy ได้ยังไม่ยืนยันข้อกำหนดเหล่านี้
 
@@ -74,8 +75,8 @@ TLS terminator/ingress ต้องป้องกันการบันทึ
 ## Build และติดตั้ง
 
 ```sh
-docker build -t stmrep:0.2.0-rc.1 .
-docker image inspect stmrep:0.2.0-rc.1 --format '{{.Id}}'
+docker build --build-arg BUILD_REVISION=$(git rev-parse HEAD) -t stmrep:0.2.0-rc.3 .
+docker image inspect stmrep:0.2.0-rc.3 --format '{{.Id}}'
 ```
 
 Frontend ใช้ `npm ci`; Python ใช้ `requirements.lock` พร้อม SHA-256 และ base images ตรึง digest การเปลี่ยน dependency/base image ต้องรัน CI ใหม่ build image เป็น release artifact แล้วส่ง registry ของแพลตฟอร์ม ใช้ digest ที่ build จริงเมื่อ deploy
@@ -110,13 +111,16 @@ Kubernetes: `deploy/kubernetes.yaml` เป็น template ที่ต้อง
 ```sh
 python -m pip install --require-hashes -r requirements-dev.lock
 python -m pytest -q
-npm --prefix frontend ci
 node frontend/scripts/check-launch.mjs
-npm --prefix frontend run build
+node frontend/scripts/check-api.mjs
+npm run build
 docker build -t stmrep:release-test .
 python -m scripts.deployment_smoke
 python -m playwright install chromium
 python -m scripts.browser_smoke
+python -m scripts.performance_check --enforce --keep-database
+python -m scripts.query_benchmark
+docker compose -p stmrep-perf-test -f deploy/compose.test.yaml down --volumes
 python -m scripts.check_release
 ```
 

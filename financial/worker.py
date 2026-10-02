@@ -56,6 +56,12 @@ class Worker:
 
     def heartbeat(self, job_id, done):
         db = Database(self.settings.pgweb_url)
+        try:
+            self._heartbeat(db,job_id,done)
+        finally:
+            db.close()
+
+    def _heartbeat(self,db,job_id,done):
         while not done.wait(30):
             try:
                 db.execute(f"UPDATE followup.jobs SET lease_until=now()+interval '180 seconds',updated_at=now() WHERE id={ident(job_id)} AND owner_id={ident(self.owner)}")
@@ -65,10 +71,13 @@ class Worker:
 
     def loop(self):
         while not self.stop.is_set():
+            db = None
             try:
-                db = Database(self.settings.pgweb_url)
+                db = Database(self.settings.pgweb_url,priority='background')
                 job = db.json(f'SELECT followup.take_job({ident(self.owner)})')
                 if not job:
+                    if db.scalar('SELECT EXISTS(SELECT 1 FROM his.dirty_claim_links)'):
+                        db.scalar('SELECT his.refresh_links(200)')
                     self.stop.wait(3)
                     continue
                 if self.stop.is_set():
@@ -97,9 +106,12 @@ class Worker:
                     self.update(db,job['id'],status='failed',error=type(exc).__name__.upper(),release=True)
                 finally:
                     heartbeat_done.set()
+                    heartbeat.join(timeout=1)
             except Exception:
                 event('WORKER_GATEWAY_UNAVAILABLE')
                 self.stop.wait(8)
+            finally:
+                if db is not None:db.close()
 
     def run_import(self, db, job):
         files = db.rows(f'SELECT * FROM followup.job_files WHERE job_id={ident(job["id"])} ORDER BY filename,id')
@@ -138,11 +150,12 @@ class Worker:
         result=import_manifest(db,job,accepted,self.settings.data_dir/'checkpoints'/f"{job['id']}.sqlite3",
                                self.settings.data_dir/'archive',callback,check_pause)
         self.update(db,job['id'],status='refreshing',progress={'phase':'refreshing'})
-        db.transport.refresh(lambda p:callback(p))
-        snapshots=db.rows(f"SELECT id::text AS id FROM his.snapshots WHERE hcode={literal(self.settings.hospital)} AND status IN ('ready','partial') ORDER BY completed_at DESC")
-        for snapshot in snapshots:
+        def refresh_progress(progress):
+            callback(progress)
             if check_pause():raise Paused()
-            db.execute(f"SELECT his.rebuild_links({ident(snapshot['id'])})")
+        if check_pause():raise Paused()
+        db.transport.refresh(refresh_progress)
+        self.refresh_links(db,check_pause,callback)
         self.update(db,job['id'],status='verifying',progress={'phase':'verifying'})
         failed=0
         for entry in accepted:
@@ -154,6 +167,15 @@ class Worker:
         result['verified_files']=len(accepted)-failed
         self.update(db,job['id'],status='completed_with_issues' if result['blocked_files'] else 'completed',result=result,release=True)
         db.audit(job['actor_ref'],'import_completed',job['id'],result)
+
+    def refresh_links(self,db,check_pause,callback):
+        refreshed=0
+        while True:
+            if check_pause():raise Paused()
+            n=db.scalar('SELECT his.refresh_links(200)')
+            if not n:break
+            refreshed+=n
+            callback({'phase':'linking','refreshed_claims':refreshed})
 
     def run_his(self, db, job):
         payload=job['payload']
@@ -191,6 +213,7 @@ class Worker:
                         current[dataset]={'state':'unverified','reason':'SOURCE_PRIMARY_KEY_NOT_UNIQUE','profile':before}
                         continue
                     cursor=db.scalar(f'SELECT max(source_key COLLATE "C") FROM his.records WHERE snapshot_id={ident(snapshot)} AND dataset={literal(dataset)}')
+                    observed_rows=int(db.scalar(f'SELECT count(*) FROM his.records WHERE snapshot_id={ident(snapshot)} AND dataset={literal(dataset)}'))
                     while True:
                         if self.paused(db,job['id']):raise Paused()
                         params={k:scope[k] for k in ('start','end') if k in REGISTRY[dataset]['params']}
@@ -203,8 +226,9 @@ class Worker:
                             raise ValueError('SOURCE_CURSOR_NOT_MONOTONIC')
                         self.send_rows(db,state,snapshot,dataset,rows)
                         cursor=keys[-1]
+                        observed_rows+=len(rows)
                         self.update(db,job['id'],progress={'phase':'syncing','dataset':dataset,'snapshot_id':snapshot,
-                                                          'dataset_rows':db.scalar(f'SELECT count(*) FROM his.records WHERE snapshot_id={ident(snapshot)} AND dataset={literal(dataset)}')})
+                                                          'dataset_rows':observed_rows})
                         if len(page)<1000:break
                     after=self.sessions.query(session,dataset+'_profile',scope if REGISTRY[dataset+'_profile']['params'] else {})[0]
                     actual=db.scalar(f'SELECT count(*) FROM his.records WHERE snapshot_id={ident(snapshot)} AND dataset={literal(dataset)}')

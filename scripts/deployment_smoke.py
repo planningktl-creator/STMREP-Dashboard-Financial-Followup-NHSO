@@ -58,7 +58,7 @@ def main():
         checks.append('fresh database migration/replay')
         environment=os.environ.copy()
         command([sys.executable,'-m','scripts.integration_check'])
-        checks.append('16 synthetic SQL assertions')
+        checks.append('synthetic SQL integration assertions')
         identity=compose('exec','-T','app','python','-c','import os;print(str(os.getuid())+":"+str(os.getgid()))').strip()
         assert identity==b'10929:10929'
         response=requests.get('http://127.0.0.1:18830/api/health/ready',timeout=6)

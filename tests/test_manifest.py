@@ -16,7 +16,8 @@ def test_kubernetes_and_compose_contract():
     assert container['resources']['requests']['cpu']==container['resources']['limits']['cpu']
     assert container['resources']['requests']['memory']==container['resources']['limits']['memory']
     temp_vol=next(v for v in pod['volumes'] if v['name']=='temporary')
-    assert temp_vol['emptyDir'].get('medium')=='Memory'
+    assert temp_vol['emptyDir'].get('medium','')==''
+    assert temp_vol['emptyDir']['sizeLimit']=='1Gi'
     ingress=next(d for d in docs if d['kind']=='Ingress')
     assert ingress['metadata']['annotations']['nginx.ingress.kubernetes.io/enable-access-log']=='false'
     compose=yaml.safe_load((root/'compose.yaml').read_text())['services']['app']

@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 import requests
 
 from .parser import canonical
+from .gateway import gateway_gate
 
 MAX_BODY = 256 * 1024
 REQUEST_DEADLINE = ContextVar('pgweb_request_deadline', default=None)
@@ -42,7 +43,7 @@ def body_size(batch_id, payload):
 
 
 class Pgweb:
-    def __init__(self, url, timeout=330, session=None):
+    def __init__(self, url, timeout=330, session=None, priority='foreground'):
         self.url = url.rstrip("/") + "/api/query"
         self.timeout = timeout
         self.session = session or requests.Session()
@@ -50,6 +51,13 @@ class Pgweb:
         self.request_seconds = 0.0
         self.min_interval = float(os.getenv('PGWEB_MIN_INTERVAL','0.25'))
         self.last_request = 0.0
+        self.priority = 2 if priority == 'background' else 1 if priority == 'report' else 0
+        self.gate = gateway_gate(self.url)
+        self.wait_seconds = 0.0
+
+    def close(self):
+        if hasattr(self.session, 'close'):
+            self.session.close()
 
     def query(self, sql, retry=True):
         for attempt in range(6 if retry else 1):
@@ -57,18 +65,25 @@ class Pgweb:
             remaining=deadline-time.monotonic() if deadline is not None else None
             if remaining is not None and remaining<=0:
                 raise RuntimeError('REPORT_TIMEOUT')
-            delay=self.min_interval-(time.monotonic()-self.last_request)
-            if remaining is not None and delay>=remaining:raise RuntimeError('REPORT_TIMEOUT')
-            if delay>0:time.sleep(delay)
             started = time.monotonic()
             self.last_request=started
             self.request_count += 1
             try:
-                remaining=deadline-time.monotonic() if deadline is not None else None
-                if remaining is not None and remaining<=0:raise RuntimeError('REPORT_TIMEOUT')
-                timeout=(min(15,remaining/2),min(self.timeout,remaining/2)) if remaining is not None else (15,self.timeout)
-                response = self.session.post(self.url, data={"query":sql},timeout=timeout)
-                self.request_seconds += time.monotonic()-started
+                with self.gate.slot(self.priority, self.min_interval, deadline) as waited:
+                    self.wait_seconds += waited
+                    remaining=deadline-time.monotonic() if deadline is not None else None
+                    if remaining is not None and remaining<=0:raise RuntimeError('REPORT_TIMEOUT')
+                    timeout=(min(15,remaining/2),min(self.timeout,remaining/2)) if remaining is not None else (15,self.timeout)
+                    sent = time.monotonic()
+                    try:
+                        response = self.session.post(self.url, data={"query":sql},timeout=timeout)
+                    finally:
+                        elapsed = time.monotonic()-sent
+                        self.request_seconds += elapsed
+                        with _gateway_lock:
+                            _gateway_counts['requests'] += 1
+                            _gateway_counts['http_seconds'] += elapsed
+                            _gateway_counts['wait_seconds'] += waited
                 if response.status_code in (429,502,503,504):
                     gateway_event('GATEWAY_TRANSIENT_ERROR')
                     raise requests.ConnectionError(f"Temporary gateway HTTP {response.status_code}")
@@ -89,7 +104,7 @@ class Pgweb:
                 return data
             except (requests.Timeout, requests.ConnectionError) as exc:
                 gateway_event('GATEWAY_RETRY' if retry and attempt<5 else 'GATEWAY_UNAVAILABLE')
-                self.session.close() if hasattr(self.session,'close') else None
+                self.close()
                 if not retry or attempt == 5:
                     raise RuntimeError(f"PGWEB_UNAVAILABLE ({type(exc).__name__}: {str(exc)[:150]}): pending batches retained for resume") from None
                 delay=min(2**attempt,15)

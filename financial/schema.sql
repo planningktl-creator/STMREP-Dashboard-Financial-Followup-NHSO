@@ -150,7 +150,17 @@ SELECT c.id AS claim_id,c.hcode,c.payer_family,c.patient_type,c.tran_id,c.hn,c.a
  (r.id IS NOT NULL AND (r.error_code IS NULL OR r.error_code='0')) AS rep_accepted,
  s.statement_amount,s.statement_rows,s.appeal_rows,s.adjustment_rows,s.statement_known
 FROM eclaim.claims c
-LEFT JOIN reporting.rep_latest r ON r.claim_id=c.id
+-- Filter to this claim before ranking report rounds. The prior global window
+-- was sorted again for every linked case (verified by EXPLAIN on fixtures).
+-- A tied latest timestamp still has no unique winner, including NULL dates.
+LEFT JOIN LATERAL (
+ WITH ranked AS (
+  SELECT hist.id,dense_rank() OVER(ORDER BY d.reported_at DESC NULLS LAST) AS rank
+  FROM reporting.rep_current hist JOIN ingest.documents d ON d.id=hist.document_id
+  WHERE hist.claim_id=c.id
+ ), selected AS (SELECT min(id) AS id FROM ranked WHERE rank=1 HAVING count(*)=1)
+ SELECT row.* FROM reporting.rep_current row JOIN selected chosen ON chosen.id=row.id
+) r ON true
 LEFT JOIN LATERAL (
  SELECT sum(t.net_amount) AS statement_amount,count(*) AS statement_rows,count(t.net_amount) AS statement_known,
  count(*) FILTER(WHERE lower(coalesce(t.category,'')) LIKE '%appeal%' OR t.category='อุทธรณ์') AS appeal_rows,

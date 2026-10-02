@@ -4,11 +4,11 @@
 
 React/TypeScript + FastAPI/worker + PostgreSQL. ข้อมูลต้นทุนที่ยังไม่ยืนยันไม่ถูกแสดงเป็น actual; statement ไม่ถูกตีความเป็นเงินโอน. หน้าสาธิตแยกข้อมูลจำลองจาก live.
 
-รุ่น **0.2.0-rc.1** เตรียม Docker สำหรับ BMS: URL Session, readiness, graceful shutdown, persistent archive/checkpoint และ GitHub CI ใช้ pgweb HTTPS และ 1 instance
+รุ่น **0.2.0-rc.3** เตรียม Dedicated Docker สำหรับ BMS พร้อม pgweb priority queue, atomic overview, incremental HIS–claim refresh และ frontend polling/abort ดู [ผล Optimize และแผน capacity](docs/OPTIMIZATION_AND_CAPACITY.md) คงหนึ่ง API process/worker และรอ persistent storage ก่อนเปิดจริง
 
 ## ตั้งค่า BMS deployment: เลือก Docker/Container
 
-Repository นี้ต้อง build ด้วย **Docker/Container** หรือใช้งานเป็น **Dedicated Pod** (Guaranteed QoS: 2 CPU / 2Gi RAM, in-memory RAM disk สำหรับ `/tmp/stmrep`) บน Kubernetes เพราะมี FastAPI และ worker ทำงานต่อเนื่อง ให้ตั้ง repository นี้ / branch `main`, build context `.`, Dockerfile `Dockerfile`, port `8000` และ `PORT=8000` ใช้คำสั่งเริ่มจาก image พร้อม persistent volume `/app/.data` ที่ UID/GID `10929` เขียนได้ ตั้ง runtime configuration และ HTTPS origin ตาม [คู่มือ BMS](docs/DEPLOY_BMS.md#ตั้งค่าหน้า-deployment-ของ-bms)
+Repository นี้ต้อง build ด้วย **Docker/Container** หรือใช้งานเป็น **Dedicated Pod** (2 CPU / 2Gi RAM, temporary disk 1Gi ที่ `/tmp/stmrep`, PVC 32Gi ที่ `/app/.data`) บน Kubernetes เพราะมี FastAPI และ worker ทำงานต่อเนื่อง ให้ตั้ง repository นี้ / branch `main`, build context `.`, Dockerfile `Dockerfile`, port `8000` และ `PORT=8000` ใช้คำสั่งเริ่มจาก image พร้อม persistent volume `/app/.data` ที่ UID/GID `10929` เขียนได้ ตั้ง runtime configuration และ HTTPS origin ตาม [คู่มือ BMS](docs/DEPLOY_BMS.md#ตั้งค่าหน้า-deployment-ของ-bms)
 
 Repository มี root `package.json` คอย delegate คำสั่ง build ไปยัง `frontend/` เพื่อให้แพลตฟอร์มที่ค้นหาไฟล์ build ที่ root ทำงานได้ แต่การรันระบบสมบูรณ์ต้องเปิด container backend เพื่อให้ API/worker พร้อมใช้งาน หากพบ log `SPA build failed` ให้ตรวจสอบว่าเลือกประเภท deployment เป็น Docker/Container แล้วหรือยัง
 

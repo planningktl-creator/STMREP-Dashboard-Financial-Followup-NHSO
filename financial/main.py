@@ -12,6 +12,7 @@ from typing import Literal
 import uuid
 import time
 import shutil
+import tempfile
 
 from fastapi import FastAPI, Depends, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -21,14 +22,14 @@ from starlette.concurrency import run_in_threadpool
 
 from .bms import Sessions, Session, BmsError
 from .config import Settings, ROOT
-from .db import Database, literal, ident, json_sql, canonical
+from .db import Database, literal, ident, json_sql, canonical, database_request
 from .demo import DemoRepository
 from .domain import scenario, backtest, number
 from .repository import Repository, json_values
 from .worker import Worker
-from .limits import RequestBodyLimit
+from .limits import RequestBodyLimit, TemporaryBudget
 from .queries import QUERY_VERSION,QUERY_FINGERPRINT
-from .operations import VERSION, readiness as operational_readiness, event, counters
+from .operations import VERSION, BUILD_REVISION, readiness as operational_readiness, event, counters, monitor_loop, resource_metrics
 from repstm.db import REQUEST_DEADLINE, gateway_counters
 
 
@@ -107,16 +108,23 @@ def create_app(settings=None):
     sessions=Sessions(settings)
     repository=DemoRepository() if settings.mode=='demo' else Repository(settings)
     worker=Worker(settings,sessions)
+    temporary_budget=TemporaryBudget()
 
     @asynccontextmanager
     async def lifespan(app):
         settings.data_dir.mkdir(parents=True,exist_ok=True)
         app.state.draining=False
         worker.start()
-        yield
-        app.state.draining=True
-        await asyncio.to_thread(worker.close)
-        sessions.client.close()
+        monitor=asyncio.create_task(monitor_loop())
+        try:
+            yield
+        finally:
+            app.state.draining=True
+            monitor.cancel()
+            try:await monitor
+            except asyncio.CancelledError:pass
+            await asyncio.to_thread(worker.close)
+            sessions.client.close()
 
     app=FastAPI(title='STMREP Financial Follow-up NHSO',version=VERSION,lifespan=lifespan,
                 docs_url='/api/docs' if settings.mode=='demo' else None,openapi_url='/api/openapi.json' if settings.mode=='demo' else None)
@@ -139,6 +147,7 @@ def create_app(settings=None):
 
     @app.middleware('http')
     async def perimeter(request,call_next):
+        temporary_reservation=0
         if app.state.draining and request.method not in ('GET','HEAD','OPTIONS'):
             return JSONResponse({'error':'SERVICE_DRAINING'},503)
         if request.url.path.startswith('/api/') and request.method not in ('GET','HEAD','OPTIONS'):
@@ -156,9 +165,17 @@ def create_app(settings=None):
             if length:
                 try:size=int(length)
                 except ValueError:return JSONResponse({'error':'CONTENT_LENGTH_INVALID'},400)
+                if size<0:return JSONResponse({'error':'CONTENT_LENGTH_INVALID'},400)
                 if size>settings.max_upload_bytes+1024*1024:
                     return JSONResponse({'error':'UPLOAD_TOO_LARGE'},413)
         timed=request.method=='GET' and request.url.path.startswith('/api/') and not request.url.path.startswith('/api/health')
+        if request.url.path=='/api/imports/uploads' and request.method=='POST':
+            temporary_reservation=int(request.headers.get('content-length') or settings.max_upload_bytes+1024*1024)
+            try:
+                await asyncio.to_thread(temporary_budget.reserve,temporary_reservation,Path(tempfile.gettempdir()),settings.minimum_free_bytes)
+            except HTTPException as exc:
+                event(exc.detail)
+                return JSONResponse({'error':exc.detail},exc.status_code)
         deadline_token=REQUEST_DEADLINE.set(time.monotonic()+max(.01,settings.report_timeout-1)) if timed else None
         try:
             response=await asyncio.wait_for(call_next(request),settings.report_timeout) if timed else await call_next(request)
@@ -168,6 +185,7 @@ def create_app(settings=None):
             event('REQUEST_FAILED');response=await safe_error(request,exc)
         finally:
             if deadline_token is not None:REQUEST_DEADLINE.reset(deadline_token)
+            if temporary_reservation:temporary_budget.release(temporary_reservation)
         response.headers['Cache-Control']=('no-store' if request.url.path.startswith('/api/') or request.url.path=='/healthz'
                                            else 'public, max-age=31536000, immutable' if request.url.path.startswith('/assets/') else 'no-cache')
         response.headers['Referrer-Policy']='no-referrer'
@@ -192,7 +210,8 @@ def create_app(settings=None):
 
     @app.get('/api/health')
     @app.get('/healthz')
-    def health():return {'status':'ok','mode':settings.mode,'hospital':settings.hospital,'version':VERSION}
+    @database_request
+    def health():return {'status':'ok','mode':settings.mode,'hospital':settings.hospital,'version':VERSION,'build_revision':BUILD_REVISION}
 
     @app.get('/api/health/ready')
     async def ready():
@@ -200,38 +219,46 @@ def create_app(settings=None):
         return JSONResponse(body,status)
 
     @app.get('/api/operations')
+    @database_request
     def operations(session:Session=Depends(authenticated)):
         disk=shutil.disk_usage(settings.data_dir)
         jobs=[] if session.demo else repository.db().rows("SELECT status,count(*) AS count,count(*) FILTER(WHERE status IN ('queued','inspecting','importing','syncing','refreshing','verifying') AND coalesce((progress->>'observed_at')::timestamptz,created_at)<now()-interval '10 minutes') AS stalled FROM followup.jobs GROUP BY status")
-        return {'events':counters(),'gateway':gateway_counters(),'jobs':jobs,
+        return {'events':counters(),'gateway':gateway_counters(),'jobs':jobs,'resources':resource_metrics(),
                 'storage':{'total_bytes':disk.total,'free_bytes':disk.free,'low':disk.free<settings.minimum_free_bytes}}
 
     @app.post('/api/session')
+    @database_request
     def connect(body:Connect,response:Response):
         session=sessions.connect(body.session_code,body.marketplace_token)
         return session_response(response,session)
 
     @app.post('/api/session/demo')
+    @database_request
     def demo(response:Response):return session_response(response,sessions.demo_session())
 
     @app.get('/api/session')
+    @database_request
     def current(session:Session=Depends(authenticated)):
         return {'hospital':session.hospital,'csrf':session.csrf,'mode':settings.mode,'expires_at':session.expires_at,'actor_kind':'BMS_SESSION' if not session.demo else 'SYNTHETIC'}
 
     @app.delete('/api/session')
+    @database_request
     def logout(request:Request,response:Response,session:Session=Depends(authorized)):
         sessions.remove(request.cookies.get('stmrep_session'))
         response.delete_cookie('stmrep_session');return {'status':'logged_out'}
 
     @app.get('/api/snapshots')
+    @database_request
     def snapshots(session:Session=Depends(authenticated)):return {'items':repository.snapshots()}
 
     @app.get('/api/overview')
+    @database_request
     def overview(start:date,end:date,snapshot_id:uuid.UUID|None=None,session:Session=Depends(authenticated)):
         valid_range(start,end)
         return repository.overview(start,end,str(snapshot_id) if snapshot_id else None)
 
     @app.get('/api/cases')
+    @database_request
     def cases(start:date,end:date,snapshot_id:uuid.UUID|None=None,care:Literal['IP','OP']|None=None,
               status:str|None=None,search:str|None=None,cursor:int=0,limit:int=50,session:Session=Depends(authenticated)):
         valid_range(start,end)
@@ -239,45 +266,54 @@ def create_app(settings=None):
         return repository.cases(start,end,str(snapshot_id) if snapshot_id else None,care,status,search,cursor,limit)
 
     @app.get('/api/cases/{case_id}')
+    @database_request
     def case_detail(case_id:int,session:Session=Depends(authenticated)):
         result=repository.case(case_id)
         if result is None:raise HTTPException(404,'CASE_NOT_FOUND')
         return result
 
     @app.get('/api/cases/{case_id}/lines')
+    @database_request
     def lines(case_id:int,cursor:int=0,limit:int=50,session:Session=Depends(authenticated)):
         if cursor<0 or not 1<=limit<=100:raise HTTPException(422,'INVALID_CURSOR')
         items=repository.case_lines(case_id,cursor,limit)
         return {'items':items[:limit],'next_cursor':items[limit-1]['id'] if len(items)>limit else None}
 
     @app.get('/api/orphans')
+    @database_request
     def orphans(start:date,end:date,cursor:int=0,limit:int=50,snapshot_id:uuid.UUID|None=None,session:Session=Depends(authenticated)):
         valid_range(start,end)
         if cursor<0 or not 1<=limit<=100:raise HTTPException(422,'INVALID_CURSOR')
         return repository.orphan_claims(start,end,cursor,limit,str(snapshot_id) if snapshot_id else None)
 
     @app.get('/api/quality')
+    @database_request
     def quality(snapshot_id:uuid.UUID|None=None,session:Session=Depends(authenticated)):
         return repository.quality(str(snapshot_id) if snapshot_id else None)
 
     @app.get('/api/rules')
+    @database_request
     def rules(session:Session=Depends(authenticated)):return {'items':repository.rule_list()}
 
     @app.get('/api/dictionary')
+    @database_request
     def dictionary(session:Session=Depends(authenticated)):
         path=Path(__file__).with_name('dictionary.json')
         return json.loads(path.read_text(encoding='utf-8')) if path.exists() else {'tables':[]}
 
     @app.get('/api/jobs')
+    @database_request
     def jobs(session:Session=Depends(authenticated)):return {'items':repository.jobs()}
 
     @app.get('/api/jobs/{job_id}')
+    @database_request
     def job(job_id:uuid.UUID,session:Session=Depends(authenticated)):
         result=repository.job(str(job_id))
         if result is None:raise HTTPException(404,'JOB_NOT_FOUND')
         return result
 
     @app.post('/api/his/sync',status_code=202)
+    @database_request
     def sync(body:Sync,session:Session=Depends(authorized)):
         valid_range(body.start,body.end)
         if session.demo:raise HTTPException(409,'DEMO_DOES_NOT_READ_HIS')
@@ -297,32 +333,40 @@ def create_app(settings=None):
         if not 1<=len(files)<=20:raise HTTPException(422,'SELECT_1_TO_20_FILES')
         try:job_id=str(uuid.UUID(request.headers.get('idempotency-key','')))
         except ValueError:raise HTTPException(422,'IDEMPOTENCY_KEY_REQUIRED') from None
-        entries=[];total=0
-        for file in files:
-            filename=file.filename or ''
-            if '/' in filename or '\\' in filename or not re.fullmatch(r'(STM_10929_|eclaim_10929_)[^\x00-\x1f/\\]+\.xls',filename,re.IGNORECASE):
-                raise HTTPException(422,'SOURCE_FILENAME_INVALID')
-            source='STM' if filename.upper().startswith('STM_') else 'REP'
-            target=settings.data_dir/'uploads'/job_id
-            target.mkdir(parents=True,exist_ok=True)
-            temp=target/(str(uuid.uuid4())+'.partial')
-            digest=hashlib.sha256();size=0;magic=b''
-            try:
-                with temp.open('wb') as writer:
-                    while chunk:=await file.read(1024*1024):
-                        if not magic:magic=chunk[:8]
-                        size+=len(chunk);total+=len(chunk)
-                        if size>settings.max_file_bytes or total>settings.max_upload_bytes:raise HTTPException(413,'UPLOAD_TOO_LARGE')
-                        digest.update(chunk);writer.write(chunk)
-                if magic!=bytes.fromhex('D0CF11E0A1B11AE1'):raise HTTPException(422,'BIFF_XLS_REQUIRED')
-                sha=digest.hexdigest();dest=target/sha/filename;dest.parent.mkdir(exist_ok=True)
-                temp.replace(dest)
-                entries.append({'id':str(uuid.uuid4()),'source':source,'filename':filename,'storage_path':str(dest.resolve()),'sha256':sha,'byte_size':size})
-            finally:
-                await file.close()
-                if temp.exists():temp.unlink()
-        if len(set((e['filename'],e['sha256']) for e in entries))!=len(entries):raise HTTPException(422,'DUPLICATE_FILES_IN_UPLOAD')
+        def store_files():
+            entries=[];total=0
+            for file in files:
+                filename=file.filename or ''
+                if '/' in filename or '\\' in filename or not re.fullmatch(r'(STM_10929_|eclaim_10929_)[^\x00-\x1f/\\]+\.xls',filename,re.IGNORECASE):
+                    raise HTTPException(422,'SOURCE_FILENAME_INVALID')
+                source='STM' if filename.upper().startswith('STM_') else 'REP'
+                target=settings.data_dir/'uploads'/job_id
+                target.mkdir(parents=True,exist_ok=True)
+                temp=target/(str(uuid.uuid4())+'.partial')
+                digest=hashlib.sha256();size=0;magic=b''
+                try:
+                    with temp.open('wb') as writer:
+                        while chunk:=file.file.read(1024*1024):
+                            if not magic:magic=chunk[:8]
+                            size+=len(chunk);total+=len(chunk)
+                            if size>settings.max_file_bytes or total>settings.max_upload_bytes:raise HTTPException(413,'UPLOAD_TOO_LARGE')
+                            if shutil.disk_usage(target).free<len(chunk)+settings.minimum_free_bytes:raise HTTPException(503,'STORAGE_LOW')
+                            digest.update(chunk);writer.write(chunk)
+                    if magic!=bytes.fromhex('D0CF11E0A1B11AE1'):raise HTTPException(422,'BIFF_XLS_REQUIRED')
+                    sha=digest.hexdigest();dest=target/sha/filename;dest.parent.mkdir(exist_ok=True)
+                    temp.replace(dest)
+                    entries.append({'id':str(uuid.uuid4()),'source':source,'filename':filename,'storage_path':str(dest.resolve()),'sha256':sha,'byte_size':size})
+                finally:
+                    if temp.exists():temp.unlink()
+            if len(set((e['filename'],e['sha256']) for e in entries))!=len(entries):raise HTTPException(422,'DUPLICATE_FILES_IN_UPLOAD')
+            return entries
+        try:
+            entries=await run_in_threadpool(store_files)
+        finally:
+            for file in files:await file.close()
+        total=sum(entry['byte_size'] for entry in entries)
         fingerprint=hashlib.sha256(canonical(sorted((e['filename'],e['sha256']) for e in entries)).encode()).hexdigest()
+        @database_request
         def persist():
             db=repository.db()
             existing=db.rows(f'SELECT payload FROM followup.jobs WHERE id={ident(job_id)}')
@@ -338,6 +382,7 @@ def create_app(settings=None):
         return {'job_id':job_id,'files':len(entries)}
 
     @app.post('/api/jobs/{job_id}/start')
+    @database_request
     def start_job(job_id:uuid.UUID,session:Session=Depends(authorized)):
         if session.demo:raise HTTPException(409,'DEMO_JOB_DISABLED')
         db=repository.db()
@@ -349,12 +394,14 @@ def create_app(settings=None):
         return {'status':'queued'}
 
     @app.post('/api/jobs/{job_id}/pause')
+    @database_request
     def pause_job(job_id:uuid.UUID,session:Session=Depends(authorized)):
         if session.demo:raise HTTPException(409,'DEMO_JOB_DISABLED')
         repository.db().execute(f"UPDATE followup.jobs SET pause_requested=true,updated_at=now(),status=CASE WHEN status='queued' THEN 'paused' ELSE status END WHERE id={ident(job_id)} AND status IN ('queued','inspecting','importing','syncing')")
         return {'status':'pause_requested'}
 
     @app.post('/api/jobs/{job_id}/resume')
+    @database_request
     def resume_job(job_id:uuid.UUID,session:Session=Depends(authorized)):
         if session.demo:raise HTTPException(409,'DEMO_JOB_DISABLED')
         rows=repository.db().rows(f"UPDATE followup.jobs SET status='queued',pause_requested=false,error_code=NULL,owner_id=NULL,lease_until=NULL,payload=payload||{json_sql({'resume_actor':session.actor})},updated_at=now() WHERE id={ident(job_id)} AND status IN ('paused','failed','waiting_session') RETURNING id")
@@ -362,6 +409,7 @@ def create_app(settings=None):
         return {'status':'queued'}
 
     @app.post('/api/tasks')
+    @database_request
     def task(body:TaskBody,session:Session=Depends(authorized)):
         result=repository.case(body.case_id)
         if not result:raise HTTPException(404,'CASE_NOT_FOUND')
@@ -379,6 +427,7 @@ def create_app(settings=None):
         return data
 
     @app.post('/api/observations')
+    @database_request
     def observation(body:ObservationBody,session:Session=Depends(authorized)):
         result=repository.case(body.case_id)
         if not result:raise HTTPException(404,'CASE_NOT_FOUND')
@@ -397,9 +446,11 @@ def create_app(settings=None):
         return {'id':str(body.id),'status':'recorded'}
 
     @app.get('/api/appeals')
+    @database_request
     def appeals(session:Session=Depends(authenticated)):return {'items':repository.appeals()}
 
     @app.post('/api/appeals')
+    @database_request
     def new_appeal(body:AppealBody,session:Session=Depends(authorized)):
         result=repository.case(body.case_id)
         if not result:raise HTTPException(404,'CASE_NOT_FOUND')
@@ -416,21 +467,25 @@ def create_app(settings=None):
         return {'id':str(body.id)}
 
     @app.post('/api/appeals/{appeal_id}/result')
+    @database_request
     def appeal_result(appeal_id:uuid.UUID,body:AppealResult,session:Session=Depends(authorized)):
         if session.demo:raise HTTPException(409,'DEMO_HAS_NO_NEW_STATEMENT_EVIDENCE')
         return repository.db().json(f'SELECT followup.resolve_appeal({ident(appeal_id)},{literal(session.actor)},{json_sql(body.model_dump())})')
 
     @app.post('/api/planning/scenario')
+    @database_request
     def planning(body:ScenarioBody,session:Session=Depends(authorized)):
         try:return scenario(**body.model_dump())
         except ValueError:raise HTTPException(422,'INVALID_SCENARIO') from None
 
     @app.get('/api/planning/forecast')
+    @database_request
     def forecast(session:Session=Depends(authenticated)):
         return {'status':'NOT_READY','reason':'HISTORICAL_COMPLETENESS_NOT_CERTIFIED','prediction':None,
                 'required':['24 complete consecutive months','same measure and coverage','rolling-origin backtest','error reporting']}
 
     @app.get('/api/readiness')
+    @database_request
     def readiness(session:Session=Depends(authenticated)):
         if session.demo:return {'mode':'demo','synthetic':True,'his':'synthetic','rep_stm':'synthetic','cost':'unverified','cash':'unavailable','forecast':'not_ready'}
         snaps=repository.snapshots()
@@ -442,6 +497,7 @@ def create_app(settings=None):
     if (dist/'assets').exists():app.mount('/assets',StaticFiles(directory=dist/'assets'),name='assets')
 
     @app.get('/{path:path}',include_in_schema=False)
+    @database_request
     def spa(path:str):
         if path.startswith('api/'):raise HTTPException(404,'ENDPOINT_NOT_FOUND')
         if not (dist/'index.html').exists():return JSONResponse({'message':'Build frontend with npm --prefix frontend run build'},503)

@@ -7,7 +7,13 @@ export async function api(path:string, options:RequestInit={}):Promise<any>{
   if(options.body && !(options.body instanceof FormData))headers.set('Content-Type','application/json');
   if(options.method && options.method!=='GET')headers.set('X-CSRF-Token',csrf);
   const response=await fetch('/api'+path,{...options,headers,credentials:'same-origin'});
-  let data:Row={};try{data=await response.json();}catch{/* response is operationally invalid */}
+  const contentType=response.headers.get('Content-Type')||'';
+  let data:Row;
+  try{
+    if(!/^application\/(?:[\w.+-]+\+)?json\b/i.test(contentType))throw new Error();
+    data=await response.json();
+    if(!data||typeof data!=='object'||Array.isArray(data))throw new Error();
+  }catch{throw new ApiError('INVALID_API_RESPONSE',response.status);}
   if(!response.ok)throw new ApiError(String(data.error||data.detail||'SERVICE_UNAVAILABLE'),response.status);
   return data;
 }
@@ -22,4 +28,5 @@ statusNames.PAYMENT_SCOPE_REVIEW='หลายสิทธิ ต้องตร
 export function message(e:any){return errorNames[e.code]||'ดำเนินการไม่สำเร็จ · '+(e.code||e.message||'กรุณาลองใหม่');}
 errorNames.LAUNCH_PARAMS_INVALID='พารามิเตอร์เปิดระบบไม่ถูกต้อง กรุณาเชื่อม Session ใหม่';
 errorNames.REPORT_TIMEOUT='อ่านรายงานเกินเวลาที่กำหนด กรุณาลดช่วงวันที่หรือลองใหม่';
+errorNames.INVALID_API_RESPONSE='บริการส่งข้อมูลกลับไม่ถูกต้อง กรุณาลองใหม่ หากยังพบปัญหาให้แจ้งผู้ดูแลตรวจ API และ gateway';
 errorNames.SERVICE_DRAINING='ระบบกำลังอัปเดต กรุณาลองใหม่หลังบริการกลับมา';

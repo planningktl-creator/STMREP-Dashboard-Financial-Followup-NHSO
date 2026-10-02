@@ -22,7 +22,7 @@ GitHub และ Gitea เป็น repo คนละชุด การ push Gi
 
 1. ยืนยัน deployment, service และ ingress ของแอปเดิมใน namespace นี้ รวมถึงหยุด build ที่ค้างจริงถ้ามี เก็บ configuration/image เดิมและ backup ฐาน REP–STM ก่อน migration ห้ามเริ่ม writer ตัวที่สอง
 2. จัด PVC `stmrep-data` ใน `portal-10929`, ขนาดเริ่ม 32Gi, `ReadWriteOnce`, storage class ของแพลตฟอร์มที่มีการสำรองและการจัดเก็บตามนโยบายโรงพยาบาล ยืนยัน Bound แล้ว mount `/app/.data` ใน container ของ deployment **เดิม**
-3. กำหนด UID/GID/fsGroup `10929:10929` ให้เขียน PVC ได้ และจัด temporary volume `/tmp/stmrep` ตาม template; ข้อมูลใน temporary volume ไม่ใช่ archive/checkpoint ตรวจ RAM disk 1Gi ภายใต้ memory limit 2Gi กับขนาดไฟล์จริงก่อนใช้งาน
+3. กำหนด UID/GID/fsGroup `10929:10929` ให้เขียน PVC ได้ และจัด temporary volume `/tmp/stmrep` ตาม template; ข้อมูลใน temporary volume ไม่ใช่ archive/checkpoint ใช้ temporary disk 1Gi (ไม่ใช้ RAM disk) ภายใต้ memory limit 2Gi และตรวจพื้นที่กับขนาดไฟล์จริงก่อนใช้งาน
 4. Patch deployment เดิมเป็น `Recreate`, 1 replica / 1 API process / 1 worker, termination grace 150 วินาที และปิด auto-sleep สำหรับแอปนี้เพื่อให้ worker ทำงานต่อเนื่อง ใช้ชื่อ container ที่อ่านพบจริงจาก deployment เดิม ไม่ apply template ที่ชื่อ `stmrep` จนเกิดแอป/worker เพิ่มอีกตัว
 5. ตั้ง container และ service target port เป็น 8000 โดยใช้ PORT=8000; liveness `/healthz`, readiness `/api/health/ready` และ HTTPS origin เดียวสำหรับ frontend กับ `/api/*`
 6. ตั้ง ingress body limit 301 MiB, read timeout 120 วินาที, buffering off และไม่บันทึก credential จาก launcher URL ยืนยัน controller/TLS/domain ที่แพลตฟอร์มใช้อยู่
